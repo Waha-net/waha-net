@@ -15,7 +15,7 @@
         /// </summary>
         /// <param name="all">If true, returns all sessions including STOPPED ones.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        Task<IReadOnlyList<SessionShort>> GetSessionsAsync(bool all = false, CancellationToken cancellationToken = default);
+        Task<IReadOnlyList<SessionShort>> GetSessionsAsync(bool all, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Corresponds to POST /api/sessions.
@@ -130,8 +130,9 @@
         /// Retrieves a QR code object for authentication.
         /// </summary>
         /// <param name="sessionName">Name or ID of the session.</param>
+        /// <param name="format">QR code output format. Available values: image, raw</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        Task<AuthQrResponse> GetAuthQrAsync(string sessionName, CancellationToken cancellationToken = default);
+        Task<AuthQrResponse> GetAuthQrAsync(string sessionName, string format = "image", CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Corresponds to POST /api/{session}/auth/request-code.
@@ -322,7 +323,7 @@
         /// <param name="session">The session name.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         [Obsolete]
-        Task<NumberExistResult> CheckNumberStatusDeprecatedAsync(string phone, string session = "default", CancellationToken cancellationToken = default);
+        Task<NumberExistResult> CheckNumberStatusDeprecatedAsync(string phone, string session, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Corresponds to POST /api/reply. (DEPRECATED)
@@ -523,7 +524,7 @@
         /// </summary>
         /// <param name="session">The session name.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        Task<IReadOnlyList<Chat>> GetChatsAsync(string session, CancellationToken cancellationToken = default);
+        Task<IReadOnlyList<Chat>> GetChatsAsync(string session, int limit, int offset, string sortBy, string sortOrder, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Corresponds to GET /api/{session}/chats/overview.

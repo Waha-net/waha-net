@@ -1,4 +1,6 @@
-﻿using System.Net.Http.Json;
+﻿using System.Buffers.Text;
+using System.Net.Http.Json;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace Waha
 {
@@ -19,6 +21,8 @@ namespace Waha
     /// </summary>
     public class WahaApiClient : IWahaApiClient
     {
+        private const int DEFAULT_LIMIT = 10;
+
         private readonly HttpClient _httpClient;
 
         public WahaApiClient(HttpClient httpClient)
@@ -156,7 +160,7 @@ namespace Waha
 
         #region [ AUTH ]
 
-        public async Task<AuthQrResponse> GetAuthQrAsync(string sessionName, CancellationToken cancellationToken = default)
+        public async Task<AuthQrResponse> GetAuthQrAsync(string sessionName, string format = "image", CancellationToken cancellationToken = default)
         {
             var response = await _httpClient.GetAsync($"/api/{sessionName}/auth/qr", cancellationToken);
             response.EnsureSuccessStatusCode();
@@ -313,7 +317,7 @@ namespace Waha
         #region [ DEPRECATED endpoints ]
 
         [Obsolete]
-        public async Task<IReadOnlyList<Message>> GetMessagesDeprecatedAsync(string chatId, string session = "default", bool downloadMedia = true, int limit = 100, int? offset = null, long? timestampLTE = null, long? timestampGTE = null, bool? fromMe = null, CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyList<Message>> GetMessagesDeprecatedAsync(string chatId, string session, bool downloadMedia = true, int limit = DEFAULT_LIMIT, int? offset = null, long? timestampLTE = null, long? timestampGTE = null, bool? fromMe = null, CancellationToken cancellationToken = default)
         {
             var url = $"/api/messages?session={session}&chatId={chatId}&downloadMedia={downloadMedia}&limit={limit}";
             if (offset.HasValue) url += $"&offset={offset.Value}";
@@ -328,7 +332,7 @@ namespace Waha
         }
 
         [Obsolete]
-        public async Task<NumberExistResult> CheckNumberStatusDeprecatedAsync(string phone, string session = "default", CancellationToken cancellationToken = default)
+        public async Task<NumberExistResult> CheckNumberStatusDeprecatedAsync(string phone, string session, CancellationToken cancellationToken = default)
         {
             var url = $"/api/checkNumberStatus?phone={phone}&session={session}";
             var response = await _httpClient.GetAsync(url, cancellationToken);
@@ -397,7 +401,7 @@ namespace Waha
                    ?? new List<object>();
         }
 
-        public async Task<IReadOnlyList<ChannelMessage>> PreviewChannelMessagesAsync(string session, string id, bool downloadMedia = false, int limit = 100, CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyList<ChannelMessage>> PreviewChannelMessagesAsync(string session, string id, bool downloadMedia = false, int limit = DEFAULT_LIMIT, CancellationToken cancellationToken = default)
         {
             var url = $"/api/{session}/channels/{id}/messages/preview?downloadMedia={downloadMedia}&limit={limit}";
             var response = await _httpClient.GetAsync(url, cancellationToken);
@@ -513,12 +517,18 @@ namespace Waha
 
         #region [ CHATS ]
 
-        public async Task<IReadOnlyList<Chat>> GetChatsAsync(string session, CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyList<Chat>> GetChatsAsync(string session, int limit = DEFAULT_LIMIT, int offset = 0, string sortBy = "", string sortOrder = "", CancellationToken cancellationToken = default)
         {
-            var response = await _httpClient.GetAsync($"/api/{session}/chats", cancellationToken);
-            response.EnsureSuccessStatusCode();
+            var url = QueryHelpers.AddQueryString($"/api/{session}/chats", new Dictionary<string, string>
+            {
+                ["limit"] = limit.ToString(),
+                ["offset"] = offset.ToString(),
+                ["sortBy"] = sortBy,
+                ["sortOrder"] = sortOrder
+            });
 
-            var x = response.Content.ReadAsStringAsync(cancellationToken);
+            var response = await _httpClient.GetAsync(url, cancellationToken);
+            response.EnsureSuccessStatusCode();
 
             var chats = await response.Content.ReadFromJsonAsync<List<Chat>>(cancellationToken: cancellationToken);
             return chats ?? new List<Chat>();
@@ -630,7 +640,7 @@ namespace Waha
 
         #region [ CONTACTS ]
 
-        public async Task<IReadOnlyList<Contact>> GetAllContactsAsync(string session, bool? sortAsc = null, string? sortBy = null, int? limit = null, int? offset = null, CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyList<Contact>> GetAllContactsAsync(string session, bool? sortAsc = null, string? sortBy = null, int? limit = DEFAULT_LIMIT, int? offset = null, CancellationToken cancellationToken = default)
         {
             var url = $"/api/contacts/all?session={session}";
             if (sortBy != null) url += $"&sortBy={sortBy}";
@@ -704,7 +714,7 @@ namespace Waha
                    ?? throw new InvalidOperationException("CreateGroup returned null");
         }
 
-        public async Task<IReadOnlyList<Group>> GetGroupsAsync(string session, bool? sortAsc = null, string? sortBy = null, int? limit = null, int? offset = null, CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyList<Group>> GetGroupsAsync(string session, bool? sortAsc = null, string? sortBy = null, int? limit = DEFAULT_LIMIT, int? offset = null, CancellationToken cancellationToken = default)
         {
             var url = $"/api/{session}/groups";
             if (sortBy != null) url += $"?sortBy={sortBy}";
