@@ -34,7 +34,11 @@ namespace Waha
 
         public async Task<IReadOnlyList<SessionShort>> GetSessionsAsync(bool all = false, CancellationToken cancellationToken = default)
         {
-            string url = $"/api/sessions?all={all}";
+            string url = $"/api/sessions";
+            url = QueryHelpers.AddQueryString(url, new Dictionary<string, string>
+            {
+                ["all"] = all.ToString()
+            });
             HttpResponseMessage response = await _httpClient.GetAsync(url, cancellationToken);
             response.EnsureSuccessStatusCode();
 
@@ -162,7 +166,13 @@ namespace Waha
 
         public async Task<AuthQrResponse> GetAuthQrAsync(string sessionName, string format = "image", CancellationToken cancellationToken = default)
         {
-            var response = await _httpClient.GetAsync($"/api/{sessionName}/auth/qr", cancellationToken);
+            var url = $"/api/{sessionName}/auth/qr";
+            url = QueryHelpers.AddQueryString(url, new Dictionary<string, string>
+            {
+                ["format"] = format
+            });
+
+            var response = await _httpClient.GetAsync(url, cancellationToken);
             response.EnsureSuccessStatusCode();
 
             var qrResponse = await response.Content.ReadFromJsonAsync<AuthQrResponse>(cancellationToken: cancellationToken);
@@ -534,9 +544,15 @@ namespace Waha
             return chats ?? new List<Chat>();
         }
 
-        public async Task<IReadOnlyList<ChatOverview>> GetChatsOverviewAsync(string session, CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyList<ChatOverview>> GetChatsOverviewAsync(string session, int limit = DEFAULT_LIMIT, int offset = 0, CancellationToken cancellationToken = default)
         {
-            var response = await _httpClient.GetAsync($"/api/{session}/chats/overview", cancellationToken);
+            var url = $"/api/{session}/chats/overview";
+            url = QueryHelpers.AddQueryString(url, new Dictionary<string, string>
+            {
+                ["limit"] = limit.ToString(),
+                ["offset"] = offset.ToString()
+            });
+            var response = await _httpClient.GetAsync(url, cancellationToken);
             response.EnsureSuccessStatusCode();
 
             var overview = await response.Content.ReadFromJsonAsync<List<ChatOverview>>(cancellationToken: cancellationToken);
@@ -549,9 +565,14 @@ namespace Waha
             response.EnsureSuccessStatusCode();
         }
 
-        public async Task<ChatPicture> GetChatPictureAsync(string session, string chatId, CancellationToken cancellationToken = default)
+        public async Task<ChatPicture> GetChatPictureAsync(string session, string chatId, bool refresh = false, CancellationToken cancellationToken = default)
         {
-            var response = await _httpClient.GetAsync($"/api/{session}/chats/{chatId}/picture", cancellationToken);
+            var url = $"/api/{session}/chats/{chatId}/picture";
+            url = QueryHelpers.AddQueryString(url, new Dictionary<string, string>
+            {
+                ["refresh"] = refresh.ToString()
+            });
+            var response = await _httpClient.GetAsync(url, cancellationToken);
             response.EnsureSuccessStatusCode();
 
             var picture = await response.Content.ReadFromJsonAsync<ChatPicture>(cancellationToken: cancellationToken);

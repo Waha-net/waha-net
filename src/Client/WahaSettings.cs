@@ -5,6 +5,13 @@
     /// </summary>
     public record WahaSettings
     {
+        private const string DEFAULT_WAHA_ENDPOINT = "localhost:3000";
+
+        public static WahaSettings Default => new WahaSettings()
+        {
+            Endpoint = new Uri(DEFAULT_WAHA_ENDPOINT)
+        };
+
         /// <summary>
         /// Gets or sets the endpoint URI for the Waha API.
         /// </summary>

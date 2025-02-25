@@ -23,12 +23,12 @@ namespace Microsoft.Extensions.Hosting
         /// <returns>A <see cref="WahaApiClientBuilder"/> for further configuration.</returns>
         /// <exception cref="ArgumentException">Thrown if <paramref name="connectionName"/> is null or whitespace.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="builder"/> is null.</exception>
-        public static WahaApiClientBuilder AddWahaApiClient(this IHostApplicationBuilder builder, string connectionName, Action<WahaSettings>? configureSettings = null)
+        public static WahaApiClientBuilder AddWahaApiClient(this IHostApplicationBuilder builder, string connectionName, string? serviceKey = null, Action<WahaSettings>? configureSettings = null)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(connectionName, nameof(connectionName));
             ArgumentNullException.ThrowIfNull(builder, nameof(builder));
 
-            return AddWahaClientInternal(builder, DEFAULT_CONFIG_SECTION_NAME, connectionName, string.Empty, configureSettings);
+            return AddWahaClientInternal(builder, DEFAULT_CONFIG_SECTION_NAME, connectionName, serviceKey, configureSettings);
         }
 
         /// <summary>
@@ -76,16 +76,25 @@ namespace Microsoft.Extensions.Hosting
 
             IWahaApiClient ConfigureWahaClient(IServiceProvider serviceProvider)
             {
-                if (settings.Endpoint is not null)
+                WahaApiClient client;
+                try
                 {
-                    var client = new WahaApiClient(new HttpClient { BaseAddress = settings.Endpoint });
-                    return client;
+                    if (settings is null || settings.Endpoint is null)
+                    {
+                        settings = WahaSettings.Default;
+                    }
+
+                    client = new WahaApiClient(new HttpClient { BaseAddress = settings.Endpoint });
+                }
+                catch (Exception ex)
+                {
+                    throw new InvalidOperationException(
+                        $"A WahaApiClient could not be configured. Ensure valid connection information was provided in 'ConnectionStrings:{connectionName}' or either " +
+                        $"{nameof(settings.Endpoint)} must be provided " +
+                        $"in the '{configurationSectionName}' configuration section.", ex);
                 }
 
-                throw new InvalidOperationException(
-                    $"A WahaApiClient could not be configured. Ensure valid connection information was provided in 'ConnectionStrings:{connectionName}' or either " +
-                    $"{nameof(settings.Endpoint)} must be provided " +
-                    $"in the '{configurationSectionName}' configuration section.");
+                return client;
             }
         }
     }

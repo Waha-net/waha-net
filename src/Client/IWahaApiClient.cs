@@ -532,7 +532,7 @@
         /// </summary>
         /// <param name="session">The session name.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        Task<IReadOnlyList<ChatOverview>> GetChatsOverviewAsync(string session, CancellationToken cancellationToken = default);
+        Task<IReadOnlyList<ChatOverview>> GetChatsOverviewAsync(string session, int limit, int offset, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Corresponds to DELETE /api/{session}/chats/{chatId}.
@@ -549,8 +549,9 @@
         /// </summary>
         /// <param name="session">The session name.</param>
         /// <param name="chatId">The chat ID.</param>
+        /// <param name="refresh">Refresh the picture from the server (24h cache by default). Do not refresh if not needed, you can get rate limit error</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        Task<ChatPicture> GetChatPictureAsync(string session, string chatId, CancellationToken cancellationToken = default);
+        Task<ChatPicture> GetChatPictureAsync(string session, string chatId, bool refresh, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Corresponds to GET /api/{session}/chats/{chatId}/messages.
