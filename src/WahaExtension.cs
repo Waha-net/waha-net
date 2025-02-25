@@ -1,5 +1,4 @@
-﻿using System.Data.Common;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Waha;
 
@@ -11,7 +10,6 @@ namespace Microsoft.Extensions.Hosting
     public static class WahaExtension
     {
         private const string DEFAULT_CONFIG_SECTION_NAME = "Waha";
-        private const string ENDPOINT_KEY = "Endpoint";
         private const string KEYED_SERVICE_SUFFIX = "_WahaApiClient_internal";
 
         /// <summary>
@@ -45,17 +43,10 @@ namespace Microsoft.Extensions.Hosting
             WahaSettings settings = new();
             builder.Configuration.GetSection(configurationSectionName).Bind(settings);
 
-            if (builder.Configuration.GetConnectionString(connectionName) is string connectionString)
+            if (settings.Endpoint == default && builder.Configuration.GetConnectionString(connectionName) is string connectionString)
             {
-                var connectionBuilder = new DbConnectionStringBuilder
-                {
-                    ConnectionString = connectionString
-                };
-
-                if (connectionBuilder.ContainsKey(ENDPOINT_KEY) && Uri.TryCreate(connectionBuilder[ENDPOINT_KEY].ToString(), UriKind.Absolute, out Uri? endpoint))
-                {
+                if (Uri.TryCreate(connectionString, UriKind.Absolute, out Uri? endpoint))
                     settings.Endpoint = endpoint;
-                }
             }
 
             configureSettings?.Invoke(settings);
