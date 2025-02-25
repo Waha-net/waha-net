@@ -39,7 +39,7 @@ jobs:
       run: dotnet pack ${{ vars.CS_PROJ_PATH }} -p:Version='${{ steps.gitversion.outputs.SemVer }}' -c Release
 
     - name: Upload NuGet package to GitHub
-      uses: actions/upload-artifact@v3.1.3
+      uses: actions/upload-artifact@v4
       with:
         name: nugetPackage
         path: bin/Release/*.nupkg
@@ -52,7 +52,7 @@ jobs:
     steps: 
     #Push NuGet package to GitHub packages
     - name: Download nuget package artifact
-      uses: actions/download-artifact@v3.0.2
+      uses: actions/download-artifact@v4
       with:
         name: nugetPackage
         path: nugetPackage
@@ -65,7 +65,7 @@ jobs:
     #Create release
     - name: Create Release
       if: needs.build.outputs.CommitsSinceVersionSource > 0 #Only release if there has been a commit/version change
-      uses: ncipollo/release-action@v1.13.0
+      uses: ncipollo/release-action@v1
       with:
         tag: ${{ needs.build.outputs.Version }}
         name: Release ${{ needs.build.outputs.Version }}
