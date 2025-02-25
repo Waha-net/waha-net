@@ -2,7 +2,7 @@ name: Build & Publish NuGet to GitHub Registry
 
 on:
   push:
-    branches: [master]
+    branches: [main]
       
 jobs:
   build:
