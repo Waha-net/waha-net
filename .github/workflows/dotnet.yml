@@ -56,17 +56,25 @@ jobs:
     if: github.ref == 'refs/heads/main' # only run job if on the main branch   
     
     steps: 
-    #Push NuGet package to GitHub packages
+    #Push NuGet package to GitHub packages and Nuget.org
     - name: Download nuget package artifact
       uses: actions/download-artifact@v4
       with:
         name: nugetPackage
         path: nugetPackage
+        
     - name: Prep packages
       run: dotnet nuget add source --username ${{ vars.USERNAME }} --password ${{ secrets.NUGET_PACKAGE_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/${{ vars.USERNAME }}/index.json"
+    
     - name: Push package to GitHub packages 
       if: needs.build.outputs.CommitsSinceVersionSource > 0 #Only release if there has been a commit/version change  
       run: dotnet nuget push nugetPackage/*.nupkg --api-key ${{ secrets.NUGET_PACKAGE_TOKEN }} --source "github"
+    
+    - name: Push package to nuget.org
+      if: needs.build.outputs.CommitsSinceVersionSource > 0
+      run: dotnet nuget push nugetPackage/*.nupkg \
+            --api-key ${{ secrets.NUGET_API_KEY }} \
+            --source https://api.nuget.org/v3/index.json
     
     #Create release
     - name: Create Release
