@@ -1,5 +1,4 @@
-﻿using System.Buffers.Text;
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 using Microsoft.AspNetCore.WebUtilities;
 
 namespace Waha

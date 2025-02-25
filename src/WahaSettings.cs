@@ -7,7 +7,7 @@
     {
         private const string DEFAULT_WAHA_ENDPOINT = "localhost:3000";
 
-        public static WahaSettings Default => new WahaSettings()
+        public static WahaSettings Default => new()
         {
             Endpoint = new Uri(DEFAULT_WAHA_ENDPOINT)
         };
