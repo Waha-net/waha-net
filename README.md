@@ -1,8 +1,9 @@
 <a name="top"></a>
 ![.NET](https://img.shields.io/badge/.NET-9.0-512BD4)
 [![language](https://img.shields.io/badge/language-C%23-239120)](https://learn.microsoft.com/ru-ru/dotnet/csharp/tour-of-csharp/overview)
-![OS](https://img.shields.io/badge/OS-linux%2C%20windows%2C%20macOS-0078D4)]
+![OS](https://img.shields.io/badge/OS-linux%2C%20windows%2C%20macOS-0078D4)
 [![GitHub release](https://img.shields.io/github/v/release/waha-net/waha-net)](#)
+[![Build & Publish NuGet to GitHub Registry](https://github.com/Waha-net/waha-net/actions/workflows/dotnet.yml/badge.svg?branch=main)](https://github.com/Waha-net/waha-net/actions/workflows/dotnet.yml)
 
 ⭐ Star us on GitHub — it motivates us a lot!
 
