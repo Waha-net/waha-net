@@ -44,14 +44,11 @@ jobs:
     - name: Pack NuGet package with versioning
       run: dotnet pack ${{ vars.CS_PROJ_PATH }} -p:Version='${{ steps.gitversion.outputs.SemVer }}' -c Release
 
-    - name: List build output
-      run: ls -R src/bin/Release
-
     - name: Upload NuGet package to GitHub
       uses: actions/upload-artifact@v4
       with:
         name: nugetPackage
-        path: bin/Release/**/*.nupkg
+        path: src/bin/Release/*.nupkg
 
   release:
     runs-on: ubuntu-latest    
