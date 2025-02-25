@@ -34,8 +34,14 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 9.0.x
+
+    - name: Restore dependencies
+      run: dotnet restore ${{ vars.CS_PROJ_PATH }}
+      
+    - name: Build
+      run: dotnet build ${{ vars.CS_PROJ_PATH }} --configuration Release
  
-    - name: Build and Pack NuGet package with versioning
+    - name: Pack NuGet package with versioning
       run: dotnet pack ${{ vars.CS_PROJ_PATH }} -p:Version='${{ steps.gitversion.outputs.SemVer }}' -c Release
 
     - name: Upload NuGet package to GitHub
