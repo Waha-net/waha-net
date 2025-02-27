@@ -24,14 +24,7 @@ Attach screenshots or logs that help explain the issue.
 
 **Environment:**
  - Waha-Net Version: [e.g., 1.0.0]
-- OS: [e.g. Window, Linux, MacOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
-
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - .NET Version [e.g. .NET 9, .NET 8]
+ - OS: [e.g. Window, Linux, MacOS]
 
 **Additional context**
 Add any other context about the problem here.
