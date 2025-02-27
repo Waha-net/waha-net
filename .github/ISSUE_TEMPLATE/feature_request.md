@@ -19,5 +19,3 @@ Any alternative solutions or workarounds you've tried or considered.
 **Additional context**
 * Are there API limitations affecting this feature?
 * Any related GitHub issues or external discussions?
-
-🚨 Note: `Waha-Net` is a _.NET SDK_ for [**WAHA (WhatsApp HTTP API)**](https://github.com/devlikeapro/waha). If your request concerns API functionality rather than SDK behavior, please check the API project directly.
