@@ -268,6 +268,26 @@ namespace Waha
 
     #endregion
 
+    #region [ PROFILE ]
+
+    public record Profile
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; } = default!;
+        [JsonPropertyName("name")]
+        public string Name { get; set; } = default!;
+        [JsonPropertyName("picture")]
+        public string? Picture { get; set; }
+    }
+
+    public record UpdateProfilePictureRequest 
+    {
+        [JsonPropertyName("file")]
+        public FileData File { get; set; } = default!;
+    }
+
+    #endregion
+
     #region [ CHATTING ]
 
     /// <summary>
@@ -493,9 +513,6 @@ namespace Waha
 
         [JsonPropertyName("filename")]
         public string? Filename { get; set; }
-
-        [JsonPropertyName("data")]
-        public string? Data { get; set; }
 
         [JsonPropertyName("url")]
         public string? Url { get; set; }

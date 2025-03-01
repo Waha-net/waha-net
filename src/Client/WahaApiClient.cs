@@ -215,6 +215,114 @@ namespace Waha
 
         #endregion
 
+        #region [ PROFILE ]
+
+        public async Task<Profile> GetProfileAsync(string sessionName, CancellationToken cancellationToken = default)
+        {
+            _logger.LogInformation("Getting profile for {SessionName} session", sessionName);
+            var stopwatch = Stopwatch.StartNew();
+
+            try
+            {
+                var url = $"/api/{sessionName}/profile";
+                _logger.LogDebug("Sending GET request to {Url}", url);
+
+                var response = await _httpClient.GetAsync(url, cancellationToken);
+                _logger.LogDebug("Received response with status code {StatusCode} from GET {Url}", response.StatusCode, url);
+
+                response.EnsureSuccessStatusCode();
+
+                var profile = await response.Content.ReadFromJsonAsync<Profile>(cancellationToken: cancellationToken);
+                _logger.LogInformation("Got profile for {SessionName} session in {ElapsedMs}ms", sessionName, stopwatch.ElapsedMilliseconds);
+
+                return profile ?? throw new InvalidOperationException("Unable to deserialize profile response.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get profile for {SessionName} after {ElapsedMs}ms", sessionName, stopwatch.ElapsedMilliseconds);
+                throw;
+            }
+        }
+
+        public async Task<bool> UpdateProfileNameAsync(string sessionName, string name, CancellationToken cancellationToken = default)
+        {
+            _logger.LogInformation("Updating profile name for {SessionName} session to '{Name}'", sessionName, name);
+            var stopwatch = Stopwatch.StartNew();
+
+            try
+            {
+                var url = $"/api/{sessionName}/profile/name";
+                _logger.LogDebug("Sending PUT request to {Url}", url);
+
+                var content = new { name };
+                var response = await _httpClient.PutAsJsonAsync(url, content, cancellationToken);
+                _logger.LogDebug("Received response with status code {StatusCode} from PUT {Url}", response.StatusCode, url);
+
+                response.EnsureSuccessStatusCode();
+
+                _logger.LogInformation("Updated profile name for {SessionName} session in {ElapsedMs}ms", sessionName, stopwatch.ElapsedMilliseconds);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to update profile name for {SessionName} after {ElapsedMs}ms", sessionName, stopwatch.ElapsedMilliseconds);
+                throw;
+            }
+        }
+
+        public async Task<bool> UpdateProfileAboutAsync(string sessionName, string about, CancellationToken cancellationToken = default)
+        {
+            _logger.LogInformation("Updating profile about for {SessionName} session", sessionName);
+            var stopwatch = Stopwatch.StartNew();
+
+            try
+            {
+                var url = $"/api/{sessionName}/profile/about";
+                _logger.LogDebug("Sending PUT request to {Url}", url);
+
+                var content = new { about };
+                var response = await _httpClient.PutAsJsonAsync(url, content, cancellationToken);
+                _logger.LogDebug("Received response with status code {StatusCode} from PUT {Url}", response.StatusCode, url);
+
+                response.EnsureSuccessStatusCode();
+
+                _logger.LogInformation("Updated profile about for {SessionName} session in {ElapsedMs}ms", sessionName, stopwatch.ElapsedMilliseconds);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to update profile about for {SessionName} after {ElapsedMs}ms", sessionName, stopwatch.ElapsedMilliseconds);
+                throw;
+            }
+        }
+
+        public async Task<bool> UpdateProfilePictureAsync(string sessionName, UpdateProfilePictureRequest updateProfilePictureRequest, CancellationToken cancellationToken = default)
+        {
+            _logger.LogInformation("Updating profile picture for {SessionName} session", sessionName);
+            var stopwatch = Stopwatch.StartNew();
+
+            try
+            {
+                var url = $"/api/{sessionName}/profile/picture";
+                _logger.LogDebug("Sending PUT request to {Url}", url);
+
+                var response = await _httpClient.PutAsJsonAsync(url, updateProfilePictureRequest, cancellationToken);
+                _logger.LogDebug("Received response with status code {StatusCode} from PUT {Url}", response.StatusCode, url);
+
+                response.EnsureSuccessStatusCode();
+
+                _logger.LogInformation("Updated profile picture for {SessionName} session in {ElapsedMs}ms", sessionName, stopwatch.ElapsedMilliseconds);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to update profile picture for {SessionName} after {ElapsedMs}ms", sessionName, stopwatch.ElapsedMilliseconds);
+                throw;
+            }
+        }
+
+        #endregion
+
         #region [ SCREENSHOT ]
 
         public async Task<byte[]> GetScreenshotAsync(string session, CancellationToken cancellationToken = default)

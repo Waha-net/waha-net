@@ -17,26 +17,50 @@ class Program
         SessionShort activeSession = activeSessions.Count == 0
             ? await wahaApiClient.StartSessionAsync("default")
             : activeSessions.First();
+        Console.WriteLine($"Active session: {activeSession.Name} ({activeSession.Status})");
+
 
         if (activeSession.Status == "SCAN_QR_CODE")
         {
-            //var authQrCodeResponse = await wahaApiClient.GetAuthQrAsync(activeSession.Name);
-            //TODO: Display QR code in console
+            string authOptions = "QR_CODE";
 
-            var authRequestCodeResponse = await wahaApiClient.RequestAuthCodeAsync(activeSession.Name, new AuthCodeRequest() { PhoneNumber = "17824095342", Method = "" });
-            if (!authRequestCodeResponse.Success)
+            switch (authOptions)
             {
-                Console.WriteLine("Auth Code Error: " + authRequestCodeResponse.Message);
+                case "QRCODE":
+                    var authQrCodeResponse = await wahaApiClient.GetAuthQrAsync(activeSession.Name);
+                    //TODO: Learn how to display QR code in Console Application
+                    break;
+                case "SMS":
+                    var authSmsRequestCodeResponse = await wahaApiClient.RequestAuthCodeAsync(activeSession.Name, new AuthCodeRequest() { PhoneNumber = "17824095342", Method = "SMS" });
+                    if (!authSmsRequestCodeResponse.Success)
+                    {
+                        Console.WriteLine("Auth Code Error: " + authSmsRequestCodeResponse.Message);
+                    }
+                    break;
+                case "VOICE":
+                    var authVoiceRequestCodeResponse = await wahaApiClient.RequestAuthCodeAsync(activeSession.Name, new AuthCodeRequest() { PhoneNumber = "17824095342", Method = "VOICE" });
+                    if (!authVoiceRequestCodeResponse.Success)
+                    {
+                        Console.WriteLine("Auth Code Error: " + authVoiceRequestCodeResponse.Message);
+                    }
+                    break;
+                case "":
+                    var authRequestCodeResponse = await wahaApiClient.RequestAuthCodeAsync(activeSession.Name, new AuthCodeRequest() { PhoneNumber = "17824095342", Method = "" });
+                    if (!authRequestCodeResponse.Success)
+                    {
+                        Console.WriteLine("Auth Code Error: " + authRequestCodeResponse.Message);
+                    }
+                    break;
             }
         }
-
-        var healthResponse = await wahaApiClient.CheckHealthAsync();
-        Console.WriteLine("Server Status: " + healthResponse.Status);
 
         var session = await wahaApiClient.GetSessionAsync(activeSession.Name);
         var me = session.Me;
         Console.WriteLine($"Logged in as {me.PushName} ({me.Id})");
 
-        await wahaApiClient.Profile
+        var profile = await wahaApiClient.GetProfileAsync(session.Name);
+        Console.WriteLine($"Profile: {profile.Name} ({profile.Id})");
+
+        Console.ReadLine();
     }
 }

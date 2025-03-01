@@ -145,6 +145,46 @@
 
         #endregion
 
+        #region [ PROFILE ]
+
+        /// <summary>
+        /// Corresponds to GET /api/{session}/profile.
+        /// Get my profile.
+        /// </summary>
+        /// <param name="sessionName">The session name.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns></returns>
+        Task<Profile> GetProfileAsync(string sessionName, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Corresponds to PUT /api/{session}/profile/name.
+        /// </summary>
+        /// <param name="sessionName">The session name.</param>
+        /// <param name="name">New name to be applied</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns></returns>
+        Task<bool> UpdateProfileNameAsync(string sessionName, string name, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Corresponds to PUT /api/{session}/profile/about.
+        /// </summary>
+        /// <param name="sessionName">The session name.</param>
+        /// <param name="about">The about section to be applied.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns></returns>
+        Task<bool> UpdateProfileAboutAsync(string sessionName, string about, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Corresponds to PUT /api/{session}/profile/picture.
+        /// </summary>
+        /// <param name="sessionName">The session name.</param>
+        /// <param name="updateProfilePictureRequest">New profile picture request.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns></returns>
+        Task<bool> UpdateProfilePictureAsync(string sessionName, UpdateProfilePictureRequest updateProfilePictureRequest, CancellationToken cancellationToken = default);
+
+        #endregion
+
         #region [ SCREENSHOT ]
 
         /// <summary>
