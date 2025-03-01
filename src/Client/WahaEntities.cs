@@ -239,11 +239,7 @@ namespace Waha
     /// </summary>
     public record AuthQrResponse
     {
-        [JsonPropertyName("qrUrl")]
-        public string QrUrl { get; set; } = default!;
-
-        [JsonPropertyName("expiresIn")]
-        public int ExpiresIn { get; set; }
+        public Stream QrCodeImageStream { get; set; } = default!;
     }
 
     /// <summary>

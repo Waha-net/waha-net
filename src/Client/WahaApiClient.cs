@@ -1,5 +1,7 @@
-﻿using System.Net.Http.Json;
+﻿using System.Diagnostics;
+using System.Net.Http.Json;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Logging;
 
 namespace Waha
 {
@@ -23,10 +25,14 @@ namespace Waha
         private const int DEFAULT_LIMIT = 10;
 
         private readonly HttpClient _httpClient;
+        private readonly ILogger<WahaApiClient> _logger;
 
-        public WahaApiClient(HttpClient httpClient)
+        public WahaApiClient(HttpClient httpClient, ILogger<WahaApiClient>? logger = null)
         {
             _httpClient = httpClient;
+            _logger = logger ?? Microsoft.Extensions.Logging.Abstractions.NullLogger<WahaApiClient>.Instance;
+
+            _logger.LogDebug("WahaApiClient initialized with base address: {BaseAddress}", httpClient.BaseAddress);
         }
 
         #region [ SESSIONS ]
@@ -165,17 +171,37 @@ namespace Waha
 
         public async Task<AuthQrResponse> GetAuthQrAsync(string sessionName, string format = "image", CancellationToken cancellationToken = default)
         {
-            var url = $"/api/{sessionName}/auth/qr";
-            url = QueryHelpers.AddQueryString(url, new Dictionary<string, string>
+            _logger.LogInformation("Starting auth via QR code for {SessionName} session", sessionName);
+            var stopwatch = Stopwatch.StartNew();
+
+            try
             {
-                ["format"] = format
-            });
+                var url = $"/api/{sessionName}/auth/qr";
+                url = QueryHelpers.AddQueryString(url, new Dictionary<string, string>
+                {
+                    ["format"] = format
+                });
+                _logger.LogDebug("Sending GET request to {Url}", url);
 
-            var response = await _httpClient.GetAsync(url, cancellationToken);
-            response.EnsureSuccessStatusCode();
+                var response = await _httpClient.GetAsync(url, cancellationToken);
+                _logger.LogDebug("Received response with status code {StatusCode} from GET {Url}", response.StatusCode, url);
 
-            var qrResponse = await response.Content.ReadFromJsonAsync<AuthQrResponse>(cancellationToken: cancellationToken);
-            return qrResponse ?? throw new InvalidOperationException("Unable to deserialize QR response.");
+                response.EnsureSuccessStatusCode();
+
+                AuthQrResponse result = new AuthQrResponse() 
+                { 
+                    QrCodeImageStream = await response.Content.ReadAsStreamAsync(cancellationToken) 
+                };
+
+                _logger.LogInformation("Got QRCode auth image for {SessionName} session in {ElapsedMs}ms with lenght of {QrCodeLenght}", sessionName, stopwatch.ElapsedMilliseconds, result.QrCodeImageStream.Length);
+
+                return result ?? throw new InvalidOperationException("Unable to deserialize QR response.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to start auth via QR code for {SessionName} after {ElapsedMs}ms", sessionName, stopwatch.ElapsedMilliseconds);
+                throw;
+            }
         }
 
         public async Task<AuthRequestCodeResponse> RequestAuthCodeAsync(string sessionName, AuthCodeRequest request, CancellationToken cancellationToken = default)
