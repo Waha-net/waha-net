@@ -61,6 +61,8 @@ class Program
         var profile = await wahaApiClient.GetProfileAsync(session.Name);
         Console.WriteLine($"Profile: {profile.Name} ({profile.Id})");
 
+        var chats = await wahaApiClient.GetChatsAsync(session.Name);
+
         Console.ReadLine();
     }
 }

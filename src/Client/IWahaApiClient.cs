@@ -7,6 +7,8 @@
     /// </summary>
     public interface IWahaApiClient
     {
+        internal const int DEFAULT_LIMIT = 10;
+
         #region [ SESSIONS ]
 
         /// <summary>
@@ -15,7 +17,7 @@
         /// </summary>
         /// <param name="all">If true, returns all sessions including STOPPED ones.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        Task<IReadOnlyList<SessionShort>> GetSessionsAsync(bool all, CancellationToken cancellationToken = default);
+        Task<IReadOnlyList<SessionShort>> GetSessionsAsync(bool all = false, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Corresponds to POST /api/sessions.
@@ -564,7 +566,7 @@
         /// </summary>
         /// <param name="session">The session name.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        Task<IReadOnlyList<Chat>> GetChatsAsync(string session, int limit, int offset, string sortBy, string sortOrder, CancellationToken cancellationToken = default);
+        Task<IReadOnlyList<Chat>> GetChatsAsync(string session, int limit = DEFAULT_LIMIT, int offset = 0, string sortBy = "", string sortOrder = "", CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Corresponds to GET /api/{session}/chats/overview.
