@@ -7,7 +7,8 @@
     /// </summary>
     public interface IWahaApiClient
     {
-        internal const int DEFAULT_LIMIT = 10;
+        private const int DEFAULT_LIMIT = 10;
+        private const int DEFAULT_OFFSET = 0;
 
         #region [ SESSIONS ]
 
@@ -91,37 +92,6 @@
         /// <param name="sessionName">The name of the session.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         Task<SessionShort> RestartSessionAsync(string sessionName, CancellationToken cancellationToken = default);
-
-        #region [ DEPRECATED ENDPOINTS ]
-
-        /// <summary>
-        /// Corresponds to POST /api/sessions/start. (DEPRECATED)
-        /// Upsert + Start session.
-        /// </summary>
-        /// <param name="request">The session start request.</param>
-        /// <param name="cancellationToken">Cancellation token.</param>
-        [Obsolete]
-        Task<SessionShort> StartSessionDeprecatedAsync(SessionStartRequest request, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Corresponds to POST /api/sessions/stop. (DEPRECATED)
-        /// Stop session (and logout by default).
-        /// </summary>
-        /// <param name="request">The session stop request.</param>
-        /// <param name="cancellationToken">Cancellation token.</param>
-        [Obsolete]
-        Task StopSessionDeprecatedAsync(SessionStopRequest request, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Corresponds to POST /api/sessions/logout. (DEPRECATED)
-        /// Logout and delete session.
-        /// </summary>
-        /// <param name="request">The session logout request.</param>
-        /// <param name="cancellationToken">Cancellation token.</param>
-        [Obsolete]
-        Task LogoutSessionDeprecatedAsync(SessionLogoutRequest request, CancellationToken cancellationToken = default);
-
-        #endregion
 
         #endregion
 
@@ -329,55 +299,6 @@
         /// <param name="cancellationToken">Cancellation token.</param>
         Task<Message> SendContactVcardAsync(SendContactVcardRequest request, CancellationToken cancellationToken = default);
 
-        #region [ DEPRECATED ENDPOINTS ]
-
-        /// <summary>
-        /// Corresponds to GET /api/messages. (DEPRECATED)
-        /// Retrieves messages in a chat.
-        /// </summary>
-        /// <param name="chatId">The chat ID.</param>
-        /// <param name="session">The session name.</param>
-        /// <param name="downloadMedia">If true, downloads media files.</param>
-        /// <param name="limit">Max number of messages to retrieve.</param>
-        /// <param name="offset">Offset for pagination.</param>
-        /// <param name="timestampLTE">Filter messages with timestamp less or equal to this value.</param>
-        /// <param name="timestampGTE">Filter messages with timestamp greater or equal to this value.</param>
-        /// <param name="fromMe">Filter messages from me if set.</param>
-        /// <param name="cancellationToken">Cancellation token.</param>
-        [Obsolete]
-        Task<IReadOnlyList<Message>> GetMessagesDeprecatedAsync(
-            string chatId,
-            string session = "default",
-            bool downloadMedia = true,
-            int limit = 100,
-            int? offset = null,
-            long? timestampLTE = null,
-            long? timestampGTE = null,
-            bool? fromMe = null,
-            CancellationToken cancellationToken = default
-        );
-
-        /// <summary>
-        /// Corresponds to GET /api/checkNumberStatus. (DEPRECATED)
-        /// Checks if a phone number is registered in WhatsApp.
-        /// </summary>
-        /// <param name="phone">The phone number.</param>
-        /// <param name="session">The session name.</param>
-        /// <param name="cancellationToken">Cancellation token.</param>
-        [Obsolete]
-        Task<NumberExistResult> CheckNumberStatusDeprecatedAsync(string phone, string session, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Corresponds to POST /api/reply. (DEPRECATED)
-        /// Replies to a message in a chat.
-        /// </summary>
-        /// <param name="request">The reply request.</param>
-        /// <param name="cancellationToken">Cancellation token.</param>
-        [Obsolete]
-        Task<Message> ReplyMessageDeprecatedAsync(ReplyRequest request, CancellationToken cancellationToken = default);
-
-        #endregion
-
         #endregion
 
         #region [ CHANNELS ]
@@ -433,7 +354,7 @@
         /// <param name="downloadMedia">If true, downloads media files.</param>
         /// <param name="limit">Max number of messages to retrieve.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        Task<IReadOnlyList<ChannelMessage>> PreviewChannelMessagesAsync(string session, string id, bool downloadMedia = false, int limit = 100, CancellationToken cancellationToken = default);
+        Task<IReadOnlyList<ChannelMessage>> PreviewChannelMessagesAsync(string session, string id, bool downloadMedia = false, int limit = DEFAULT_LIMIT, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Corresponds to GET /api/{session}/channels.
@@ -565,8 +486,12 @@
         /// Retrieves all chats in the specified session.
         /// </summary>
         /// <param name="session">The session name.</param>
+        /// <param name="limit">Max number of contacts to retrieve.</param>
+        /// <param name="offset">Offset for pagination.</param>
+        /// <param name="sortBy">Sort by field.</param><
+        /// <param name="sortOrder">Sort order - desc (Z => A, New first) or asc (A => Z, Old first).</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        Task<IReadOnlyList<Chat>> GetChatsAsync(string session, int limit = DEFAULT_LIMIT, int offset = 0, string sortBy = "", string sortOrder = "", CancellationToken cancellationToken = default);
+        Task<IReadOnlyList<Chat>> GetChatsAsync(string session, int limit = DEFAULT_LIMIT, int offset = DEFAULT_OFFSET, string sortBy = "", string sortOrder = "", CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Corresponds to GET /api/{session}/chats/overview.
@@ -574,7 +499,7 @@
         /// </summary>
         /// <param name="session">The session name.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        Task<IReadOnlyList<ChatOverview>> GetChatsOverviewAsync(string session, int limit, int offset, CancellationToken cancellationToken = default);
+        Task<IReadOnlyList<ChatOverview>> GetChatsOverviewAsync(string session, int limit = DEFAULT_LIMIT, int offset = DEFAULT_OFFSET, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Corresponds to DELETE /api/{session}/chats/{chatId}.
@@ -593,7 +518,7 @@
         /// <param name="chatId">The chat ID.</param>
         /// <param name="refresh">Refresh the picture from the server (24h cache by default). Do not refresh if not needed, you can get rate limit error</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        Task<ChatPicture> GetChatPictureAsync(string session, string chatId, bool refresh, CancellationToken cancellationToken = default);
+        Task<ChatPicture> GetChatPictureAsync(string session, string chatId, bool refresh = false, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Corresponds to GET /api/{session}/chats/{chatId}/messages.
@@ -601,8 +526,14 @@
         /// </summary>
         /// <param name="session">The session name.</param>
         /// <param name="chatId">The chat ID.</param>
+        /// <param name="limit">Max number of contacts to retrieve.</param>
+        /// <param name="offset">Offset for pagination.</param>
+        /// <param name="filterTimestampLte">Filter messages before this timestamp (inclusive).</param>
+        /// <param name="filterTimestampGte">Filter messages after this timestamp (inclusive).</param>
+        /// <param name="filterOnlyMyMessages">Null bring all messages. You can filter if you want to take only your messages (true) or others messages (false).</param>
+        /// <param name="downloadMedia">Download media for messages.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        Task<IReadOnlyList<ChatMessage>> GetChatMessagesAsync(string session, string chatId, CancellationToken cancellationToken = default);
+        Task<IReadOnlyList<ChatMessage>> GetChatMessagesAsync(string session, string chatId, int limit = DEFAULT_LIMIT, int offset = DEFAULT_OFFSET, string filterTimestampLte = "", string filterTimestampGte = "", bool? filterOnlyMyMessages = null, bool downloadMedia = false, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Corresponds to POST /api/{session}/chats/{chatId}/messages.
@@ -711,11 +642,11 @@
         /// </summary>
         /// <param name="session">The session name.</param>
         /// <param name="sortAsc">Whether to sort ascending.</param>
-        /// <param name="sortBy">The field to sort by.</param>
+        /// <param name="sortOrder">Sort order - desc (Z => A, New first) or asc (A => Z, Old first)</param>
         /// <param name="limit">Max number of contacts to retrieve.</param>
         /// <param name="offset">Offset for pagination.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        Task<IReadOnlyList<Contact>> GetAllContactsAsync(string session, bool? sortAsc = null, string? sortBy = null, int? limit = null, int? offset = null, CancellationToken cancellationToken = default);
+        Task<IReadOnlyList<Contact>> GetAllContactsAsync(string session, int limit = DEFAULT_LIMIT, int offset = DEFAULT_OFFSET, string sortAsc = "", string sortOrder = "", CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Corresponds to GET /api/contacts?contactId=.
@@ -1136,18 +1067,6 @@
         /// </summary>
         /// <param name="cancellationToken">Cancellation token.</param>
         Task<byte[]> GetHeapSnapshotAsync(CancellationToken cancellationToken = default);
-
-        #region [ DEPRECATED Endpoints ]
-
-        /// <summary>
-        /// Corresponds to GET /api/version. (DEPRECATED)
-        /// Retrieves the server version from the older endpoint.
-        /// </summary>
-        /// <param name="cancellationToken">Cancellation token.</param>
-        [Obsolete]
-        Task<Environment> GetVersionDeprecatedAsync(CancellationToken cancellationToken = default);
-
-        #endregion
 
         #endregion
     }

@@ -1,7 +1,25 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Waha
 {
+    public class UnixTimestampConverter : JsonConverter<DateTime>
+    {
+        public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            if (reader.TokenType == JsonTokenType.Number && reader.TryGetInt64(out long timestamp))
+            {
+                return DateTimeOffset.FromUnixTimeSeconds(timestamp).DateTime;
+            }
+            throw new JsonException("Invalid timestamp format");
+        }
+
+        public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options)
+        {
+            writer.WriteNumberValue(new DateTimeOffset(value).ToUnixTimeSeconds());
+        }
+    }
+
     #region [ SESSIONS ]
 
     /// <summary>
@@ -34,6 +52,15 @@ namespace Waha
         [JsonPropertyName("name")]
         public string Name { get; set; } = default!;
 
+        [JsonPropertyName("me")]
+        public SessionUser? User { get; set; } = default!;
+
+        [JsonPropertyName("assignedWorker")]
+        public string? AssignedWorker { get; set; } = default!;
+
+        /// <summary>
+        /// Valid values are: "STOPPED" or "STARTING" or "SCAN_QR_CODE" or "WORKING" or"FAILED"
+        /// </summary>
         [JsonPropertyName("status")]
         public string Status { get; set; } = default!;
 
@@ -299,6 +326,7 @@ namespace Waha
         public string Id { get; set; } = default!;
 
         [JsonPropertyName("timestamp")]
+        [JsonConverter(typeof(UnixTimestampConverter))]
         public long Timestamp { get; set; }
 
         [JsonPropertyName("from")]
@@ -902,25 +930,55 @@ namespace Waha
 
     #region [ CHATS ]
 
+    public record ChatId 
+    {
+        [JsonPropertyName("server")]
+        public string Server { get; set; } = default!;
+
+        [JsonPropertyName("user")]
+        public string User { get; set; } = default!;
+
+        [JsonPropertyName("_serialized")]
+        public string Id { get; set; } = default!;
+    }
+
     /// <summary>
     /// Represents basic chat data.
     /// </summary>
     public record Chat
     {
         [JsonPropertyName("id")]
-        public string Id { get; set; } = default!;
+        public ChatId Id { get; set; } = default!;
 
         [JsonPropertyName("name")]
         public string Name { get; set; } = default!;
 
-        [JsonPropertyName("picture")]
-        public string? Picture { get; set; }
+        [JsonPropertyName("isGroup")]
+        public bool IsGroup { get; set; } = default!;
 
-        [JsonPropertyName("lastMessage")]
-        public string? LastMessage { get; set; }
+        [JsonPropertyName("isReadOnly")]
+        public bool IsReadOnly { get; set; } = default!;
 
-        [JsonPropertyName("lastMessageTimestamp")]
-        public DateTime? LastMessageTimestamp { get; set; }
+        [JsonPropertyName("unreadCount")]
+        public int UnreadCount { get; set; } = default!;
+
+        [JsonPropertyName("timestamp")]
+        [JsonConverter(typeof(UnixTimestampConverter))]
+        public DateTime Timestamp { get; set; } = default!;
+
+        [JsonPropertyName("archived")]
+        public bool Archived { get; set; } = default!;
+
+        [JsonPropertyName("pinned")]
+        public bool Pinned { get; set; } = default!;
+
+        [JsonPropertyName("isMuted")]
+        public bool IsMuted { get; set; } = default!;
+
+        [JsonPropertyName("muteExpiration")]
+        public int MuteExpiration { get; set; } = default!;
+
+        //TODO: Add Last Message
     }
 
     /// <summary>
@@ -962,14 +1020,21 @@ namespace Waha
         [JsonPropertyName("id")]
         public string Id { get; set; } = default!;
 
+        [JsonPropertyName("from")]
+        public string From { get; set; } = default!;
+
+        [JsonPropertyName("to")]
+        public string To { get; set; } = default!;
+
         [JsonPropertyName("body")]
         public string Body { get; set; } = default!;
 
         [JsonPropertyName("timestamp")]
+        [JsonConverter(typeof(UnixTimestampConverter))]
         public DateTime Timestamp { get; set; }
 
-        [JsonPropertyName("sender")]
-        public string Sender { get; set; } = default!;
+        [JsonPropertyName("hasMedia")]
+        public bool HasMedia { get; set; } = default!;
     }
 
     /// <summary>

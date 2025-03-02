@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
@@ -134,34 +136,6 @@ namespace Waha
             var result = await response.Content.ReadFromJsonAsync<SessionShort>(cancellationToken: cancellationToken);
             return result ?? throw new InvalidOperationException($"Restart session '{sessionName}' returned null");
         }
-
-        #region [ DEPRECATED endpoints ]
-
-        [Obsolete]
-        public async Task<SessionShort> StartSessionDeprecatedAsync(SessionStartRequest request, CancellationToken cancellationToken)
-        {
-            HttpResponseMessage response = await _httpClient.PostAsJsonAsync("/api/sessions/start", request, cancellationToken);
-            response.EnsureSuccessStatusCode();
-
-            var result = await response.Content.ReadFromJsonAsync<SessionShort>(cancellationToken: cancellationToken);
-            return result ?? throw new InvalidOperationException("Deprecated start session returned null");
-        }
-
-        [Obsolete]
-        public async Task StopSessionDeprecatedAsync(SessionStopRequest request, CancellationToken cancellationToken)
-        {
-            HttpResponseMessage response = await _httpClient.PostAsJsonAsync("/api/sessions/stop", request, cancellationToken);
-            response.EnsureSuccessStatusCode();
-        }
-
-        [Obsolete]
-        public async Task LogoutSessionDeprecatedAsync(SessionLogoutRequest request, CancellationToken cancellationToken)
-        {
-            HttpResponseMessage response = await _httpClient.PostAsJsonAsync("/api/sessions/logout", request, cancellationToken);
-            response.EnsureSuccessStatusCode();
-        }
-
-        #endregion
 
         #endregion
 
@@ -455,44 +429,6 @@ namespace Waha
                    ?? throw new InvalidOperationException("SendContactVcard returned null");
         }
 
-        #region [ DEPRECATED endpoints ]
-
-        [Obsolete]
-        public async Task<IReadOnlyList<Message>> GetMessagesDeprecatedAsync(string chatId, string session, bool downloadMedia, int limit, int? offset, long? timestampLTE, long? timestampGTE, bool? fromMe, CancellationToken cancellationToken)
-        {
-            var url = $"/api/messages?session={session}&chatId={chatId}&downloadMedia={downloadMedia}&limit={limit}";
-            if (offset.HasValue) url += $"&offset={offset.Value}";
-            if (timestampLTE.HasValue) url += $"&filter.timestamp.lte={timestampLTE.Value}";
-            if (timestampGTE.HasValue) url += $"&filter.timestamp.gte={timestampGTE.Value}";
-            if (fromMe.HasValue) url += $"&filter.fromMe={fromMe.Value}";
-
-            var response = await _httpClient.GetAsync(url, cancellationToken);
-            response.EnsureSuccessStatusCode();
-            return (await response.Content.ReadFromJsonAsync<List<Message>>(cancellationToken: cancellationToken))
-                   ?? new List<Message>();
-        }
-
-        [Obsolete]
-        public async Task<NumberExistResult> CheckNumberStatusDeprecatedAsync(string phone, string session, CancellationToken cancellationToken)
-        {
-            var url = $"/api/checkNumberStatus?phone={phone}&session={session}";
-            var response = await _httpClient.GetAsync(url, cancellationToken);
-            response.EnsureSuccessStatusCode();
-            return (await response.Content.ReadFromJsonAsync<NumberExistResult>(cancellationToken: cancellationToken))
-                   ?? throw new InvalidOperationException("CheckNumberStatus returned null");
-        }
-
-        [Obsolete]
-        public async Task<Message> ReplyMessageDeprecatedAsync(ReplyRequest request, CancellationToken cancellationToken)
-        {
-            var response = await _httpClient.PostAsJsonAsync("/api/reply", request, cancellationToken);
-            response.EnsureSuccessStatusCode();
-            return (await response.Content.ReadFromJsonAsync<Message>(cancellationToken: cancellationToken))
-                   ?? throw new InvalidOperationException("ReplyMessage returned null");
-        }
-
-        #endregion
-
         #endregion
 
         #region [ CHANNELS ]
@@ -660,13 +596,17 @@ namespace Waha
 
         public async Task<IReadOnlyList<Chat>> GetChatsAsync(string session, int limit, int offset, string sortBy, string sortOrder, CancellationToken cancellationToken)
         {
-            var url = QueryHelpers.AddQueryString($"/api/{session}/chats", new Dictionary<string, string>
+            var queryStringParameters = new Dictionary<string, string>
             {
                 ["limit"] = limit.ToString(),
-                ["offset"] = offset.ToString(),
-                ["sortBy"] = sortBy,
-                ["sortOrder"] = sortOrder
-            });
+                ["offset"] = offset.ToString()
+            };
+            if(!string.IsNullOrWhiteSpace(sortBy))
+                queryStringParameters.Add("sortBy", sortBy);
+            if (!string.IsNullOrWhiteSpace(sortOrder))
+                queryStringParameters.Add("sortOrder", sortOrder);
+
+            var url = QueryHelpers.AddQueryString($"/api/{session}/chats", queryStringParameters);
 
             var response = await _httpClient.GetAsync(url, cancellationToken);
             response.EnsureSuccessStatusCode();
@@ -710,9 +650,23 @@ namespace Waha
             return picture ?? throw new InvalidOperationException("Unable to deserialize chat picture.");
         }
 
-        public async Task<IReadOnlyList<ChatMessage>> GetChatMessagesAsync(string session, string chatId, CancellationToken cancellationToken)
+        public async Task<IReadOnlyList<ChatMessage>> GetChatMessagesAsync(string session, string chatId, int limit, int offset, string filterTimestampLte, string filterTimestampGte, bool? filterOnlyMyMessages, bool downloadMedia, CancellationToken cancellationToken)
         {
-            var response = await _httpClient.GetAsync($"/api/{session}/chats/{chatId}/messages", cancellationToken);
+            var url = $"/api/{session}/chats/{chatId}/messages";
+            url = QueryHelpers.AddQueryString(url, new Dictionary<string, string>
+            {
+                ["limit"] = limit.ToString(),
+                ["offset"] = offset.ToString(),
+                ["downloadMedia"] = downloadMedia.ToString().ToLower()
+            });
+            if(filterOnlyMyMessages.HasValue)
+                url = QueryHelpers.AddQueryString(url, "filter.fromMe", filterOnlyMyMessages.Value.ToString().ToLower());
+            if (!string.IsNullOrWhiteSpace(filterTimestampLte))
+                url = QueryHelpers.AddQueryString(url, "filter.timestamp.lte", filterTimestampLte);
+            if (!string.IsNullOrWhiteSpace(filterTimestampGte))
+                url = QueryHelpers.AddQueryString(url, "filter.timestamp.gte", filterTimestampGte);
+
+            var response = await _httpClient.GetAsync(url, cancellationToken);
             response.EnsureSuccessStatusCode();
 
             var messages = await response.Content.ReadFromJsonAsync<List<ChatMessage>>(cancellationToken: cancellationToken);
@@ -792,16 +746,23 @@ namespace Waha
 
         #region [ CONTACTS ]
 
-        public async Task<IReadOnlyList<Contact>> GetAllContactsAsync(string session, bool? sortAsc, string? sortBy, int? limit, int? offset, CancellationToken cancellationToken)
+        public async Task<IReadOnlyList<Contact>> GetAllContactsAsync(string session, int limit, int offset, string sortAsc, string sortOrder, CancellationToken cancellationToken)
         {
-            var url = $"/api/contacts/all?session={session}";
-            if (sortBy != null) url += $"&sortBy={sortBy}";
-            if (sortAsc.HasValue) url += $"&sortOrder={(sortAsc.Value ? "asc" : "desc")}";
-            if (limit.HasValue) url += $"&limit={limit.Value}";
-            if (offset.HasValue) url += $"&offset={offset.Value}";
+            var url = $"/api/contacts/all";
+            url = QueryHelpers.AddQueryString(url, new Dictionary<string, string>
+            {
+                ["session"] = session,
+                ["limit"] = limit.ToString(),
+                ["offset"] = offset.ToString(),
+            });
+            if (!string.IsNullOrWhiteSpace(sortAsc))
+                url = QueryHelpers.AddQueryString(url, "sortAsc", sortAsc);
+            if (!string.IsNullOrWhiteSpace(sortOrder))
+                url = QueryHelpers.AddQueryString(url, "sortOrder", sortOrder);
 
             var response = await _httpClient.GetAsync(url, cancellationToken);
             response.EnsureSuccessStatusCode();
+            
             return (await response.Content.ReadFromJsonAsync<List<Contact>>(cancellationToken: cancellationToken))
                    ?? new List<Contact>();
         }
@@ -1185,19 +1146,6 @@ namespace Waha
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadAsByteArrayAsync(cancellationToken);
         }
-
-        #region [ DEPRECATED Endpoints ]
-
-        [Obsolete]
-        public async Task<Environment> GetVersionDeprecatedAsync(CancellationToken cancellationToken)
-        {
-            var response = await _httpClient.GetAsync("/api/version", cancellationToken);
-            response.EnsureSuccessStatusCode();
-            return (await response.Content.ReadFromJsonAsync<Environment>(cancellationToken: cancellationToken))
-                   ?? throw new InvalidOperationException("GetVersionDeprecated returned null");
-        }
-
-        #endregion
 
         #endregion
     }
