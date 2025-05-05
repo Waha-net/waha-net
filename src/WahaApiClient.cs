@@ -744,7 +744,7 @@ namespace Waha
 
             var response = await _httpClient.GetAsync(url, cancellationToken);
             response.EnsureSuccessStatusCode();
-            return (await response.Content.ReadFromJsonAsync<List<Group>>(cancellationToken: cancellationToken))
+            return (await response.Content.ReadFromJsonAsync<Dictionary<string, Group>>(cancellationToken: cancellationToken))?.Values.ToList()
                    ?? new List<Group>();
         }
 

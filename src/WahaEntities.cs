@@ -1023,8 +1023,8 @@ namespace Waha
         [JsonPropertyName("id")]
         public string Id { get; set; } = default!;
 
-        [JsonPropertyName("isAdmin")]
-        public bool? IsAdmin { get; set; }
+        [JsonPropertyName("admin")]
+        public string? Admin { get; set; }
     }
 
     /// <summary>
