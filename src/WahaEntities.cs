@@ -612,14 +612,61 @@ namespace Waha
         [JsonPropertyName("chatId")]
         public string ChatId { get; set; } = default!;
 
+        [JsonPropertyName("poll")] 
+        public SendPollRequestPoll Poll { get; set; } = new();
+
+        [JsonPropertyName("session")]
+        public string Session { get; set; } = "default";
+    }
+
+    public record SendPollRequestPoll
+    {
         [JsonPropertyName("name")]
         public string Question { get; set; } = default!;
 
         [JsonPropertyName("options")]
         public List<string> Options { get; set; } = new();
 
-        [JsonPropertyName("session")]
-        public string Session { get; set; } = "default";
+        [JsonPropertyName("multipleAnswers")]
+        public bool IsMultipleAnswers { get; set; } = false;
+    }
+
+    public class SendPollResponsePoll
+    {
+        public string id { get; set; }
+        public string to { get; set; }
+        public string from { get; set; }
+        public bool fromMe { get; set; }
+    }
+
+    public class SendPollResponse
+    {
+        [JsonPropertyName("vote")]
+        public SendPollResponseVote Vote { get; set; }
+
+        [JsonPropertyName("poll")]
+        public SendPollResponsePoll Poll { get; set; }
+    }
+
+    public class SendPollResponseVote
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("to")]
+        public string To { get; set; }
+
+        [JsonPropertyName("from")]
+        public string From { get; set; }
+
+        [JsonPropertyName("fromMe")]
+        public bool FromMe { get; set; }
+
+        [JsonPropertyName("selectedOptions")]
+        public List<string> SelectedOptions { get; set; }
+
+        [JsonPropertyName("timestamp")]
+        public long Timestamp { get; set; }
     }
 
     /// <summary>
@@ -991,6 +1038,9 @@ namespace Waha
 
         [JsonPropertyName("name")]
         public string? Name { get; set; }
+
+        [JsonPropertyName("pushname")]
+        public string? PushName { get; set; }
 
         [JsonPropertyName("isBusiness")]
         public bool? IsBusiness { get; set; }
