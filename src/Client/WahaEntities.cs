@@ -221,42 +221,6 @@ namespace Waha
         public SessionConfig? Config { get; set; }
     }
 
-    /// <summary>
-    /// DEPRECATED request for starting a session.
-    /// </summary>
-    [Obsolete]
-    public record SessionStartRequest
-    {
-        [JsonPropertyName("name")]
-        public string Name { get; set; } = default!;
-
-        [JsonPropertyName("config")]
-        public SessionConfig? Config { get; set; }
-    }
-
-    /// <summary>
-    /// DEPRECATED request for stopping a session.
-    /// </summary>
-    [Obsolete]
-    public record SessionStopRequest
-    {
-        [JsonPropertyName("name")]
-        public string Name { get; set; } = default!;
-
-        [JsonPropertyName("logout")]
-        public bool Logout { get; set; } = false;
-    }
-
-    /// <summary>
-    /// DEPRECATED request for logging out a session.
-    /// </summary>
-    [Obsolete]
-    public record SessionLogoutRequest
-    {
-        [JsonPropertyName("name")]
-        public string Name { get; set; } = default!;
-    }
-
     #endregion
 
     #region [ AUTH ]
@@ -674,10 +638,14 @@ namespace Waha
 
     public class SendPollResponsePoll
     {
-        public string id { get; set; }
-        public string to { get; set; }
-        public string from { get; set; }
-        public bool fromMe { get; set; }
+        [JsonPropertyName("id")]
+        public string Id { get; set; }
+        [JsonPropertyName("to")]
+        public string To { get; set; }
+        [JsonPropertyName("from")]
+        public string From { get; set; }
+        [JsonPropertyName("fromMe")]
+        public bool FromMe { get; set; }
     }
 
     public class SendPollResponse
