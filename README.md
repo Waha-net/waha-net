@@ -10,17 +10,43 @@
 ![License](https://badgen.net/github/stars/waha-net/waha-net)
 
 # Waha Net
-A .NET C# Library for [`WAHA (WhatsApp HTTP API)`](https://github.com/devlikeapro/waha)
+Waha Net is a .NET C# client library for interacting with [`WAHA (WhatsApp HTTP API)`](https://github.com/devlikeapro/waha). It simplifies the integration of WAHA services into your .NET applications.
 
-### Installation
+## Installation
 To install the `Waha` library, run the following command in your .NET project:
 
 > dotnet add package Waha
 
-### Usage
-Below is a short example showing how to integrate Waha into your .NET projects to retrieve `WhatsApp chats`, once the session is started and the QR has been validated.
+Or, use the NuGet Package Manager in Visual Studio.
 
-#### ASP .NET
+## Usage
+This section demonstrates how to integrate Waha Net into your .NET projects to retrieve WhatsApp chats. This assumes that a WAHA session has been started and the QR code has been scanned and validated.
+
+### Setting up WAHA Docker Container
+First, ensure you have WAHA (WhatsApp HTTP API) running. Follow these steps to set it up as a Docker container:
+
+**Prerequisite**: Ensure [Docker](https://docs.docker.com/get-docker/) is installed on your system.
+
+```bash
+docker pull devlikeapro/waha
+```
+
+Run the container:
+
+```bash
+docker run -it --rm -p 3000:3000/tcp --name waha devlikeapro/waha
+
+# It prints logs and the last line must be
+# WhatsApp HTTP API is running on: http://[::1]:3000
+```
+
+Open the link in your browser [http://localhost:3000/](http://localhost:3000/) and you'll see API documentation
+(Swagger).
+
+### ASP .NET
+
+Here's a sample code snippet for an ASP.NET Core application that lists WhatsApp chats from the logged-in user:
+
 ```csharp
 using Waha;
 

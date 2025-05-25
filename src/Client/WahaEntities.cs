@@ -1,7 +1,25 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Waha
 {
+    public class UnixTimestampConverter : JsonConverter<DateTime>
+    {
+        public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            if (reader.TokenType == JsonTokenType.Number && reader.TryGetInt64(out long timestamp))
+            {
+                return DateTimeOffset.FromUnixTimeSeconds(timestamp).DateTime;
+            }
+            throw new JsonException("Invalid timestamp format");
+        }
+
+        public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options)
+        {
+            writer.WriteNumberValue(new DateTimeOffset(value).ToUnixTimeSeconds());
+        }
+    }
+
     #region [ SESSIONS ]
 
     /// <summary>
@@ -34,6 +52,15 @@ namespace Waha
         [JsonPropertyName("name")]
         public string Name { get; set; } = default!;
 
+        [JsonPropertyName("me")]
+        public SessionUser? User { get; set; } = default!;
+
+        [JsonPropertyName("assignedWorker")]
+        public string? AssignedWorker { get; set; } = default!;
+
+        /// <summary>
+        /// Valid values are: "STOPPED" or "STARTING" or "SCAN_QR_CODE" or "WORKING" or"FAILED"
+        /// </summary>
         [JsonPropertyName("status")]
         public string Status { get; set; } = default!;
 
@@ -194,42 +221,6 @@ namespace Waha
         public SessionConfig? Config { get; set; }
     }
 
-    /// <summary>
-    /// DEPRECATED request for starting a session.
-    /// </summary>
-    [Obsolete]
-    public record SessionStartRequest
-    {
-        [JsonPropertyName("name")]
-        public string Name { get; set; } = default!;
-
-        [JsonPropertyName("config")]
-        public SessionConfig? Config { get; set; }
-    }
-
-    /// <summary>
-    /// DEPRECATED request for stopping a session.
-    /// </summary>
-    [Obsolete]
-    public record SessionStopRequest
-    {
-        [JsonPropertyName("name")]
-        public string Name { get; set; } = default!;
-
-        [JsonPropertyName("logout")]
-        public bool Logout { get; set; } = false;
-    }
-
-    /// <summary>
-    /// DEPRECATED request for logging out a session.
-    /// </summary>
-    [Obsolete]
-    public record SessionLogoutRequest
-    {
-        [JsonPropertyName("name")]
-        public string Name { get; set; } = default!;
-    }
-
     #endregion
 
     #region [ AUTH ]
@@ -239,11 +230,7 @@ namespace Waha
     /// </summary>
     public record AuthQrResponse
     {
-        [JsonPropertyName("qrUrl")]
-        public string QrUrl { get; set; } = default!;
-
-        [JsonPropertyName("expiresIn")]
-        public int ExpiresIn { get; set; }
+        public Stream QrCodeImageStream { get; set; } = default!;
     }
 
     /// <summary>
@@ -272,6 +259,26 @@ namespace Waha
 
     #endregion
 
+    #region [ PROFILE ]
+
+    public record Profile
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; } = default!;
+        [JsonPropertyName("name")]
+        public string Name { get; set; } = default!;
+        [JsonPropertyName("picture")]
+        public string? Picture { get; set; }
+    }
+
+    public record UpdateProfilePictureRequest 
+    {
+        [JsonPropertyName("file")]
+        public FileData File { get; set; } = default!;
+    }
+
+    #endregion
+
     #region [ CHATTING ]
 
     /// <summary>
@@ -283,6 +290,7 @@ namespace Waha
         public string Id { get; set; } = default!;
 
         [JsonPropertyName("timestamp")]
+        [JsonConverter(typeof(UnixTimestampConverter))]
         public long Timestamp { get; set; }
 
         [JsonPropertyName("from")]
@@ -498,9 +506,6 @@ namespace Waha
         [JsonPropertyName("filename")]
         public string? Filename { get; set; }
 
-        [JsonPropertyName("data")]
-        public string? Data { get; set; }
-
         [JsonPropertyName("url")]
         public string? Url { get; set; }
     }
@@ -633,10 +638,14 @@ namespace Waha
 
     public class SendPollResponsePoll
     {
-        public string id { get; set; }
-        public string to { get; set; }
-        public string from { get; set; }
-        public bool fromMe { get; set; }
+        [JsonPropertyName("id")]
+        public string Id { get; set; }
+        [JsonPropertyName("to")]
+        public string To { get; set; }
+        [JsonPropertyName("from")]
+        public string From { get; set; }
+        [JsonPropertyName("fromMe")]
+        public bool FromMe { get; set; }
     }
 
     public class SendPollResponse
@@ -936,25 +945,55 @@ namespace Waha
 
     #region [ CHATS ]
 
+    public record ChatId 
+    {
+        [JsonPropertyName("server")]
+        public string Server { get; set; } = default!;
+
+        [JsonPropertyName("user")]
+        public string User { get; set; } = default!;
+
+        [JsonPropertyName("_serialized")]
+        public string Id { get; set; } = default!;
+    }
+
     /// <summary>
     /// Represents basic chat data.
     /// </summary>
     public record Chat
     {
         [JsonPropertyName("id")]
-        public string Id { get; set; } = default!;
+        public ChatId Id { get; set; } = default!;
 
         [JsonPropertyName("name")]
         public string Name { get; set; } = default!;
 
-        [JsonPropertyName("picture")]
-        public string? Picture { get; set; }
+        [JsonPropertyName("isGroup")]
+        public bool IsGroup { get; set; } = default!;
 
-        [JsonPropertyName("lastMessage")]
-        public string? LastMessage { get; set; }
+        [JsonPropertyName("isReadOnly")]
+        public bool IsReadOnly { get; set; } = default!;
 
-        [JsonPropertyName("lastMessageTimestamp")]
-        public DateTime? LastMessageTimestamp { get; set; }
+        [JsonPropertyName("unreadCount")]
+        public int UnreadCount { get; set; } = default!;
+
+        [JsonPropertyName("timestamp")]
+        [JsonConverter(typeof(UnixTimestampConverter))]
+        public DateTime Timestamp { get; set; } = default!;
+
+        [JsonPropertyName("archived")]
+        public bool Archived { get; set; } = default!;
+
+        [JsonPropertyName("pinned")]
+        public bool Pinned { get; set; } = default!;
+
+        [JsonPropertyName("isMuted")]
+        public bool IsMuted { get; set; } = default!;
+
+        [JsonPropertyName("muteExpiration")]
+        public int MuteExpiration { get; set; } = default!;
+
+        //TODO: Add Last Message
     }
 
     /// <summary>
@@ -996,14 +1035,21 @@ namespace Waha
         [JsonPropertyName("id")]
         public string Id { get; set; } = default!;
 
+        [JsonPropertyName("from")]
+        public string From { get; set; } = default!;
+
+        [JsonPropertyName("to")]
+        public string To { get; set; } = default!;
+
         [JsonPropertyName("body")]
         public string Body { get; set; } = default!;
 
         [JsonPropertyName("timestamp")]
+        [JsonConverter(typeof(UnixTimestampConverter))]
         public DateTime Timestamp { get; set; }
 
-        [JsonPropertyName("sender")]
-        public string Sender { get; set; } = default!;
+        [JsonPropertyName("hasMedia")]
+        public bool HasMedia { get; set; } = default!;
     }
 
     /// <summary>

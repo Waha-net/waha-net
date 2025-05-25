@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using System.Data.Common;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Waha;
 
@@ -45,8 +46,7 @@ namespace Microsoft.Extensions.Hosting
 
             if (settings.Endpoint == default && builder.Configuration.GetConnectionString(connectionName) is string connectionString)
             {
-                if (Uri.TryCreate(connectionString, UriKind.Absolute, out Uri? endpoint))
-                    settings.Endpoint = endpoint;
+                settings.Endpoint = ParseEndpointFromConnectionString(connectionString);
             }
 
             configureSettings?.Invoke(settings);
@@ -64,6 +64,19 @@ namespace Microsoft.Extensions.Hosting
             }
 
             return new WahaApiClientBuilder(builder, serviceKey);
+
+            Uri? ParseEndpointFromConnectionString(string connectionString)
+            {
+                var connectionBuilder = new DbConnectionStringBuilder { ConnectionString = connectionString };
+
+                if (connectionBuilder.ContainsKey("Endpoint") &&
+                    Uri.TryCreate(connectionBuilder["Endpoint"].ToString(), UriKind.Absolute, out Uri? endpoint))
+                {
+                    return endpoint;
+                }
+
+                return Uri.TryCreate(connectionString, UriKind.Absolute, out Uri? directUri) ? directUri : null;
+            }
 
             IWahaApiClient ConfigureWahaClient(IServiceProvider serviceProvider)
             {
