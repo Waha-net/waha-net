@@ -26,7 +26,7 @@ class Program
 
             switch (authOptions)
             {
-                case "QRCODE":
+                case "QR_CODE":
                     var authQrCodeResponse = await wahaApiClient.GetAuthQrAsync(activeSession.Name);
                     //TODO: Learn how to display QR code in Console Application
                     break;
