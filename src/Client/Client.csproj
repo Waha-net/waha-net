@@ -13,9 +13,9 @@
 		<PackageProjectUrl>https://github.com/Waha-net/waha-net</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Waha-net/waha-net.git</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
-		<AssemblyVersion>1.0.0.0</AssemblyVersion>
-		<PackageVersion>1.0.1</PackageVersion>
-		<FileVersion>1.0.1.*</FileVersion>
+		<AssemblyVersion>1.1.0.0</AssemblyVersion>
+		<PackageVersion>1.1.0</PackageVersion>
+		<FileVersion>1.1.0.*</FileVersion>
 		<PackageTags>waha,whatsapp,api</PackageTags>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
