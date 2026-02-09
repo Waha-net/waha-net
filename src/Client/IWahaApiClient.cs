@@ -1185,10 +1185,10 @@
         /// </summary>
         /// <param name="session">The session name.</param>
         /// <param name="chatId">The chat ID.</param>
-        /// <param name="messages">Optional list of message IDs to read. If null, reads recent messages.</param>
+        /// <param name="messageIds">Optional list of message IDs to read. If null, reads recent messages.</param>
         /// <param name="days">Number of days back to read messages (default 7).</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        Task<ReadMessagesResponse> ReadChatMessagesAsync(string session, string chatId, List<string>? messages = null, int days = 7, CancellationToken cancellationToken = default);
+        Task<ReadMessagesResponse> ReadChatMessagesAsync(string session, string chatId, List<string>? messageIds = null, int days = 7, CancellationToken cancellationToken = default);
 
         #endregion
 
