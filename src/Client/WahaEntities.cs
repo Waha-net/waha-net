@@ -1356,4 +1356,262 @@ namespace Waha
     }
 
     #endregion
+
+    #region [ CALLS ]
+
+    /// <summary>
+    /// Request to reject an incoming call.
+    /// </summary>
+    public record RejectCallRequest
+    {
+        [JsonPropertyName("from")]
+        public string From { get; set; } = default!;
+
+        [JsonPropertyName("id")]
+        public string Id { get; set; } = default!;
+    }
+
+    #endregion
+
+    #region [ LIDS ]
+
+    /// <summary>
+    /// Represents a mapping between LID (Linked ID) and phone number.
+    /// </summary>
+    public record LidToPhoneNumber
+    {
+        [JsonPropertyName("lid")]
+        public string? Lid { get; set; }
+
+        [JsonPropertyName("pn")]
+        public string? Pn { get; set; }
+    }
+
+    /// <summary>
+    /// Response containing a count.
+    /// </summary>
+    public record CountResponse
+    {
+        [JsonPropertyName("count")]
+        public int Count { get; set; }
+    }
+
+    #endregion
+
+    #region [ MEDIA ]
+
+    /// <summary>
+    /// Request to convert media files.
+    /// </summary>
+    public record MediaConvertRequest
+    {
+        /// <summary>
+        /// URL of the file to convert.
+        /// </summary>
+        [JsonPropertyName("url")]
+        public string? Url { get; set; }
+
+        /// <summary>
+        /// Base64-encoded data of the file to convert.
+        /// </summary>
+        [JsonPropertyName("data")]
+        public string? Data { get; set; }
+    }
+
+    #endregion
+
+    #region [ ADDITIONAL CHATTING ]
+
+    /// <summary>
+    /// Request to send a list message (interactive).
+    /// </summary>
+    public record SendListRequest
+    {
+        [JsonPropertyName("session")]
+        public string Session { get; set; } = default!;
+
+        [JsonPropertyName("chatId")]
+        public string ChatId { get; set; } = default!;
+
+        [JsonPropertyName("title")]
+        public string Title { get; set; } = default!;
+
+        [JsonPropertyName("text")]
+        public string Text { get; set; } = default!;
+
+        [JsonPropertyName("footer")]
+        public string? Footer { get; set; }
+
+        [JsonPropertyName("buttonText")]
+        public string ButtonText { get; set; } = default!;
+
+        [JsonPropertyName("sections")]
+        public List<ListSection> Sections { get; set; } = new();
+    }
+
+    /// <summary>
+    /// Represents a section in a list message.
+    /// </summary>
+    public record ListSection
+    {
+        [JsonPropertyName("title")]
+        public string Title { get; set; } = default!;
+
+        [JsonPropertyName("rows")]
+        public List<ListRow> Rows { get; set; } = new();
+    }
+
+    /// <summary>
+    /// Represents a row in a list section.
+    /// </summary>
+    public record ListRow
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; } = default!;
+
+        [JsonPropertyName("title")]
+        public string Title { get; set; } = default!;
+
+        [JsonPropertyName("description")]
+        public string? Description { get; set; }
+    }
+
+    /// <summary>
+    /// Request to send a link with custom preview.
+    /// </summary>
+    public record SendLinkCustomPreviewRequest
+    {
+        [JsonPropertyName("session")]
+        public string Session { get; set; } = default!;
+
+        [JsonPropertyName("chatId")]
+        public string ChatId { get; set; } = default!;
+
+        [JsonPropertyName("text")]
+        public string Text { get; set; } = default!;
+
+        [JsonPropertyName("preview")]
+        public LinkPreview Preview { get; set; } = default!;
+    }
+
+    /// <summary>
+    /// Represents a custom link preview.
+    /// </summary>
+    public record LinkPreview
+    {
+        [JsonPropertyName("url")]
+        public string Url { get; set; } = default!;
+
+        [JsonPropertyName("title")]
+        public string? Title { get; set; }
+
+        [JsonPropertyName("description")]
+        public string? Description { get; set; }
+
+        [JsonPropertyName("thumbnail")]
+        public MediaData? Thumbnail { get; set; }
+    }
+
+    /// <summary>
+    /// Represents media data for requests.
+    /// </summary>
+    public record MediaData
+    {
+        [JsonPropertyName("url")]
+        public string? Url { get; set; }
+
+        [JsonPropertyName("data")]
+        public string? Data { get; set; }
+
+        [JsonPropertyName("mimetype")]
+        public string? Mimetype { get; set; }
+    }
+
+    /// <summary>
+    /// Request to vote on a poll.
+    /// </summary>
+    public record SendPollVoteRequest
+    {
+        [JsonPropertyName("session")]
+        public string Session { get; set; } = default!;
+
+        [JsonPropertyName("chatId")]
+        public string ChatId { get; set; } = default!;
+
+        [JsonPropertyName("pollMessageId")]
+        public string PollMessageId { get; set; } = default!;
+
+        [JsonPropertyName("options")]
+        public List<string> Options { get; set; } = new();
+    }
+
+    /// <summary>
+    /// Request to reply on a button message.
+    /// </summary>
+    public record SendButtonsReplyRequest
+    {
+        [JsonPropertyName("session")]
+        public string Session { get; set; } = default!;
+
+        [JsonPropertyName("chatId")]
+        public string ChatId { get; set; } = default!;
+
+        [JsonPropertyName("messageId")]
+        public string MessageId { get; set; } = default!;
+
+        [JsonPropertyName("buttonId")]
+        public string ButtonId { get; set; } = default!;
+    }
+
+    /// <summary>
+    /// Response from reading messages.
+    /// </summary>
+    public record ReadMessagesResponse
+    {
+        [JsonPropertyName("read")]
+        public int? Read { get; set; }
+    }
+
+    #endregion
+
+    #region [ ADDITIONAL GROUPS ]
+
+    /// <summary>
+    /// Response indicating success or failure.
+    /// </summary>
+    public record SuccessResponse
+    {
+        [JsonPropertyName("success")]
+        public bool Success { get; set; }
+    }
+
+    /// <summary>
+    /// Represents a group participant with detailed info (v2 endpoint).
+    /// </summary>
+    public record GroupParticipantV2
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; } = default!;
+
+        [JsonPropertyName("admin")]
+        public bool Admin { get; set; }
+
+        [JsonPropertyName("superAdmin")]
+        public bool SuperAdmin { get; set; }
+    }
+
+    #endregion
+
+    #region [ ADDITIONAL STATUS ]
+
+    /// <summary>
+    /// Response containing a new message ID.
+    /// </summary>
+    public record NewMessageIdResponse
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; } = default!;
+    }
+
+    #endregion
 }
