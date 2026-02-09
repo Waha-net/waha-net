@@ -1260,16 +1260,16 @@ namespace Waha
                    ?? throw new InvalidOperationException("SendButtonsReply returned null");
         }
 
-        public async Task<ReadMessagesResponse> ReadChatMessagesAsync(string session, string chatId, List<string>? messages, int days, CancellationToken cancellationToken)
+        public async Task<ReadMessagesResponse> ReadChatMessagesAsync(string session, string chatId, List<string>? messageIds, int days, CancellationToken cancellationToken)
         {
             var url = $"/api/{session}/chats/{chatId}/messages/read";
             var queryParams = new Dictionary<string, string?>
             {
                 ["days"] = days.ToString(CultureInfo.InvariantCulture)
             };
-            if (messages != null && messages.Count > 0)
+            if (messageIds != null && messageIds.Count > 0)
             {
-                queryParams["messages"] = string.Join(",", messages);
+                queryParams["messages"] = string.Join(",", messageIds);
             }
             url = QueryHelpers.AddQueryString(url, queryParams);
             var response = await _httpClient.PostAsync(url, null, cancellationToken);
