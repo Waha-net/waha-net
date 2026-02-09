@@ -1069,5 +1069,210 @@
         Task<byte[]> GetHeapSnapshotAsync(CancellationToken cancellationToken = default);
 
         #endregion
+
+        #region [ CALLS ]
+
+        /// <summary>
+        /// Corresponds to POST /api/{session}/calls/reject.
+        /// Rejects an incoming call.
+        /// </summary>
+        /// <param name="session">The session name.</param>
+        /// <param name="request">The reject call request.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        Task RejectCallAsync(string session, RejectCallRequest request, CancellationToken cancellationToken = default);
+
+        #endregion
+
+        #region [ LIDS ]
+
+        /// <summary>
+        /// Corresponds to GET /api/{session}/lids.
+        /// Gets all known LID to phone number mappings.
+        /// </summary>
+        /// <param name="session">The session name.</param>
+        /// <param name="limit">Max number of results to retrieve.</param>
+        /// <param name="offset">Offset for pagination.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        Task<IReadOnlyList<LidToPhoneNumber>> GetAllLidsAsync(string session, int limit = DEFAULT_LIMIT, int offset = DEFAULT_OFFSET, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Corresponds to GET /api/{session}/lids/count.
+        /// Gets the count of known LIDs.
+        /// </summary>
+        /// <param name="session">The session name.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        Task<CountResponse> GetLidsCountAsync(string session, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Corresponds to GET /api/{session}/lids/{lid}.
+        /// Gets the phone number for a specific LID.
+        /// </summary>
+        /// <param name="session">The session name.</param>
+        /// <param name="lid">The LID identifier.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        Task<LidToPhoneNumber> GetPhoneByLidAsync(string session, string lid, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Corresponds to GET /api/{session}/lids/pn/{phoneNumber}.
+        /// Gets the LID for a specific phone number (chat id).
+        /// </summary>
+        /// <param name="session">The session name.</param>
+        /// <param name="phoneNumber">The phone number or chat ID.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        Task<LidToPhoneNumber> GetLidByPhoneAsync(string session, string phoneNumber, CancellationToken cancellationToken = default);
+
+        #endregion
+
+        #region [ MEDIA ]
+
+        /// <summary>
+        /// Corresponds to POST /api/{session}/media/convert/voice.
+        /// Converts voice file to WhatsApp format (opus).
+        /// </summary>
+        /// <param name="session">The session name.</param>
+        /// <param name="request">The voice file to convert.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        Task<byte[]> ConvertVoiceAsync(string session, MediaConvertRequest request, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Corresponds to POST /api/{session}/media/convert/video.
+        /// Converts video file to WhatsApp format (mp4).
+        /// </summary>
+        /// <param name="session">The session name.</param>
+        /// <param name="request">The video file to convert.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        Task<byte[]> ConvertVideoAsync(string session, MediaConvertRequest request, CancellationToken cancellationToken = default);
+
+        #endregion
+
+        #region [ ADDITIONAL CHATTING ]
+
+        /// <summary>
+        /// Corresponds to POST /api/sendList.
+        /// Sends a list message (interactive).
+        /// </summary>
+        /// <param name="request">The send list request.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        Task<Message> SendListAsync(SendListRequest request, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Corresponds to POST /api/send/link-custom-preview.
+        /// Sends a text message with a custom link preview.
+        /// </summary>
+        /// <param name="request">The send link custom preview request.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        Task<Message> SendLinkCustomPreviewAsync(SendLinkCustomPreviewRequest request, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Corresponds to POST /api/sendPollVote.
+        /// Casts vote(s) on an existing poll message.
+        /// </summary>
+        /// <param name="request">The poll vote request.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        Task<Message> SendPollVoteAsync(SendPollVoteRequest request, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Corresponds to POST /api/send/buttons/reply.
+        /// Replies on a button message.
+        /// </summary>
+        /// <param name="request">The button reply request.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        Task<Message> SendButtonsReplyAsync(SendButtonsReplyRequest request, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Corresponds to POST /api/{session}/chats/{chatId}/messages/read.
+        /// Reads unread messages in the chat.
+        /// </summary>
+        /// <param name="session">The session name.</param>
+        /// <param name="chatId">The chat ID.</param>
+        /// <param name="messages">Optional list of message IDs to read. If null, reads recent messages.</param>
+        /// <param name="days">Number of days back to read messages (default 7).</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        Task<ReadMessagesResponse> ReadChatMessagesAsync(string session, string chatId, List<string>? messages = null, int days = 7, CancellationToken cancellationToken = default);
+
+        #endregion
+
+        #region [ ADDITIONAL GROUPS ]
+
+        /// <summary>
+        /// Corresponds to GET /api/{session}/groups/count.
+        /// Gets the number of groups.
+        /// </summary>
+        /// <param name="session">The session name.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        Task<CountResponse> GetGroupsCountAsync(string session, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Corresponds to GET /api/{session}/groups/{id}/picture.
+        /// Gets the group picture URL.
+        /// </summary>
+        /// <param name="session">The session name.</param>
+        /// <param name="groupId">The group ID.</param>
+        /// <param name="refresh">Refresh the picture from the server.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        Task<ChatPicture> GetGroupPictureAsync(string session, string groupId, bool refresh = false, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Corresponds to PUT /api/{session}/groups/{id}/picture.
+        /// Sets the group picture.
+        /// </summary>
+        /// <param name="session">The session name.</param>
+        /// <param name="groupId">The group ID.</param>
+        /// <param name="request">Request containing the file data.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        Task<SuccessResponse> SetGroupPictureAsync(string session, string groupId, UpdateProfilePictureRequest request, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Corresponds to DELETE /api/{session}/groups/{id}/picture.
+        /// Deletes the group picture.
+        /// </summary>
+        /// <param name="session">The session name.</param>
+        /// <param name="groupId">The group ID.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        Task<SuccessResponse> DeleteGroupPictureAsync(string session, string groupId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Corresponds to GET /api/{session}/groups/{id}/participants/v2.
+        /// Gets the participants for a group (v2 endpoint with more details).
+        /// </summary>
+        /// <param name="session">The session name.</param>
+        /// <param name="groupId">The group ID.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        Task<IReadOnlyList<GroupParticipantV2>> GetGroupParticipantsV2Async(string session, string groupId, CancellationToken cancellationToken = default);
+
+        #endregion
+
+        #region [ ADDITIONAL PROFILE ]
+
+        /// <summary>
+        /// Corresponds to DELETE /api/{session}/profile/picture.
+        /// Deletes the profile picture.
+        /// </summary>
+        /// <param name="sessionName">The session name.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        Task<bool> DeleteProfilePictureAsync(string sessionName, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Corresponds to PUT /api/{session}/profile/status.
+        /// Sets the profile status (About).
+        /// </summary>
+        /// <param name="sessionName">The session name.</param>
+        /// <param name="status">The status text to set.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        Task<bool> SetProfileStatusAsync(string sessionName, string status, CancellationToken cancellationToken = default);
+
+        #endregion
+
+        #region [ ADDITIONAL STATUS ]
+
+        /// <summary>
+        /// Corresponds to GET /api/{session}/status/new-message-id.
+        /// Generates a new message ID that can be used to batch contacts when sending status updates.
+        /// </summary>
+        /// <param name="session">The session name.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        Task<NewMessageIdResponse> GetNewStatusMessageIdAsync(string session, CancellationToken cancellationToken = default);
+
+        #endregion
     }
 }
