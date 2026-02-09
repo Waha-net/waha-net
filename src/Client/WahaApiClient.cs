@@ -1148,5 +1148,226 @@ namespace Waha
         }
 
         #endregion
+
+        #region [ CALLS ]
+
+        public async Task RejectCallAsync(string session, RejectCallRequest request, CancellationToken cancellationToken)
+        {
+            var url = $"/api/{session}/calls/reject";
+            var response = await _httpClient.PostAsJsonAsync(url, request, cancellationToken);
+            response.EnsureSuccessStatusCode();
+        }
+
+        #endregion
+
+        #region [ LIDS ]
+
+        public async Task<IReadOnlyList<LidToPhoneNumber>> GetAllLidsAsync(string session, int limit, int offset, CancellationToken cancellationToken)
+        {
+            var url = $"/api/{session}/lids";
+            var queryParams = new Dictionary<string, string?>
+            {
+                ["limit"] = limit.ToString(CultureInfo.InvariantCulture),
+                ["offset"] = offset.ToString(CultureInfo.InvariantCulture)
+            };
+            url = QueryHelpers.AddQueryString(url, queryParams);
+            var response = await _httpClient.GetAsync(url, cancellationToken);
+            response.EnsureSuccessStatusCode();
+            return (await response.Content.ReadFromJsonAsync<List<LidToPhoneNumber>>(cancellationToken: cancellationToken))
+                   ?? new List<LidToPhoneNumber>();
+        }
+
+        public async Task<CountResponse> GetLidsCountAsync(string session, CancellationToken cancellationToken)
+        {
+            var url = $"/api/{session}/lids/count";
+            var response = await _httpClient.GetAsync(url, cancellationToken);
+            response.EnsureSuccessStatusCode();
+            return (await response.Content.ReadFromJsonAsync<CountResponse>(cancellationToken: cancellationToken))
+                   ?? throw new InvalidOperationException("GetLidsCount returned null");
+        }
+
+        public async Task<LidToPhoneNumber> GetPhoneByLidAsync(string session, string lid, CancellationToken cancellationToken)
+        {
+            var url = $"/api/{session}/lids/{lid}";
+            var response = await _httpClient.GetAsync(url, cancellationToken);
+            response.EnsureSuccessStatusCode();
+            return (await response.Content.ReadFromJsonAsync<LidToPhoneNumber>(cancellationToken: cancellationToken))
+                   ?? throw new InvalidOperationException("GetPhoneByLid returned null");
+        }
+
+        public async Task<LidToPhoneNumber> GetLidByPhoneAsync(string session, string phoneNumber, CancellationToken cancellationToken)
+        {
+            var url = $"/api/{session}/lids/pn/{phoneNumber}";
+            var response = await _httpClient.GetAsync(url, cancellationToken);
+            response.EnsureSuccessStatusCode();
+            return (await response.Content.ReadFromJsonAsync<LidToPhoneNumber>(cancellationToken: cancellationToken))
+                   ?? throw new InvalidOperationException("GetLidByPhone returned null");
+        }
+
+        #endregion
+
+        #region [ MEDIA ]
+
+        public async Task<byte[]> ConvertVoiceAsync(string session, MediaConvertRequest request, CancellationToken cancellationToken)
+        {
+            var url = $"/api/{session}/media/convert/voice";
+            var response = await _httpClient.PostAsJsonAsync(url, request, cancellationToken);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadAsByteArrayAsync(cancellationToken);
+        }
+
+        public async Task<byte[]> ConvertVideoAsync(string session, MediaConvertRequest request, CancellationToken cancellationToken)
+        {
+            var url = $"/api/{session}/media/convert/video";
+            var response = await _httpClient.PostAsJsonAsync(url, request, cancellationToken);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadAsByteArrayAsync(cancellationToken);
+        }
+
+        #endregion
+
+        #region [ ADDITIONAL CHATTING ]
+
+        public async Task<Message> SendListAsync(SendListRequest request, CancellationToken cancellationToken)
+        {
+            var response = await _httpClient.PostAsJsonAsync("/api/sendList", request, cancellationToken);
+            response.EnsureSuccessStatusCode();
+            return (await response.Content.ReadFromJsonAsync<Message>(cancellationToken: cancellationToken))
+                   ?? throw new InvalidOperationException("SendList returned null");
+        }
+
+        public async Task<Message> SendLinkCustomPreviewAsync(SendLinkCustomPreviewRequest request, CancellationToken cancellationToken)
+        {
+            var response = await _httpClient.PostAsJsonAsync("/api/send/link-custom-preview", request, cancellationToken);
+            response.EnsureSuccessStatusCode();
+            return (await response.Content.ReadFromJsonAsync<Message>(cancellationToken: cancellationToken))
+                   ?? throw new InvalidOperationException("SendLinkCustomPreview returned null");
+        }
+
+        public async Task<Message> SendPollVoteAsync(SendPollVoteRequest request, CancellationToken cancellationToken)
+        {
+            var response = await _httpClient.PostAsJsonAsync("/api/sendPollVote", request, cancellationToken);
+            response.EnsureSuccessStatusCode();
+            return (await response.Content.ReadFromJsonAsync<Message>(cancellationToken: cancellationToken))
+                   ?? throw new InvalidOperationException("SendPollVote returned null");
+        }
+
+        public async Task<Message> SendButtonsReplyAsync(SendButtonsReplyRequest request, CancellationToken cancellationToken)
+        {
+            var response = await _httpClient.PostAsJsonAsync("/api/send/buttons/reply", request, cancellationToken);
+            response.EnsureSuccessStatusCode();
+            return (await response.Content.ReadFromJsonAsync<Message>(cancellationToken: cancellationToken))
+                   ?? throw new InvalidOperationException("SendButtonsReply returned null");
+        }
+
+        public async Task<ReadMessagesResponse> ReadChatMessagesAsync(string session, string chatId, List<string>? messages, int days, CancellationToken cancellationToken)
+        {
+            var url = $"/api/{session}/chats/{chatId}/messages/read";
+            var queryParams = new Dictionary<string, string?>
+            {
+                ["days"] = days.ToString(CultureInfo.InvariantCulture)
+            };
+            if (messages != null && messages.Count > 0)
+            {
+                queryParams["messages"] = string.Join(",", messages);
+            }
+            url = QueryHelpers.AddQueryString(url, queryParams);
+            var response = await _httpClient.PostAsync(url, null, cancellationToken);
+            response.EnsureSuccessStatusCode();
+            return (await response.Content.ReadFromJsonAsync<ReadMessagesResponse>(cancellationToken: cancellationToken))
+                   ?? new ReadMessagesResponse();
+        }
+
+        #endregion
+
+        #region [ ADDITIONAL GROUPS ]
+
+        public async Task<CountResponse> GetGroupsCountAsync(string session, CancellationToken cancellationToken)
+        {
+            var url = $"/api/{session}/groups/count";
+            var response = await _httpClient.GetAsync(url, cancellationToken);
+            response.EnsureSuccessStatusCode();
+            return (await response.Content.ReadFromJsonAsync<CountResponse>(cancellationToken: cancellationToken))
+                   ?? throw new InvalidOperationException("GetGroupsCount returned null");
+        }
+
+        public async Task<ChatPicture> GetGroupPictureAsync(string session, string groupId, bool refresh, CancellationToken cancellationToken)
+        {
+            var url = $"/api/{session}/groups/{groupId}/picture";
+            var queryParams = new Dictionary<string, string?>
+            {
+                ["refresh"] = refresh.ToString().ToLowerInvariant()
+            };
+            url = QueryHelpers.AddQueryString(url, queryParams);
+            var response = await _httpClient.GetAsync(url, cancellationToken);
+            response.EnsureSuccessStatusCode();
+            return (await response.Content.ReadFromJsonAsync<ChatPicture>(cancellationToken: cancellationToken))
+                   ?? throw new InvalidOperationException("GetGroupPicture returned null");
+        }
+
+        public async Task<SuccessResponse> SetGroupPictureAsync(string session, string groupId, UpdateProfilePictureRequest request, CancellationToken cancellationToken)
+        {
+            var url = $"/api/{session}/groups/{groupId}/picture";
+            var response = await _httpClient.PutAsJsonAsync(url, request, cancellationToken);
+            response.EnsureSuccessStatusCode();
+            return (await response.Content.ReadFromJsonAsync<SuccessResponse>(cancellationToken: cancellationToken))
+                   ?? new SuccessResponse { Success = true };
+        }
+
+        public async Task<SuccessResponse> DeleteGroupPictureAsync(string session, string groupId, CancellationToken cancellationToken)
+        {
+            var url = $"/api/{session}/groups/{groupId}/picture";
+            var response = await _httpClient.DeleteAsync(url, cancellationToken);
+            response.EnsureSuccessStatusCode();
+            return (await response.Content.ReadFromJsonAsync<SuccessResponse>(cancellationToken: cancellationToken))
+                   ?? new SuccessResponse { Success = true };
+        }
+
+        public async Task<IReadOnlyList<GroupParticipantV2>> GetGroupParticipantsV2Async(string session, string groupId, CancellationToken cancellationToken)
+        {
+            var url = $"/api/{session}/groups/{groupId}/participants/v2";
+            var response = await _httpClient.GetAsync(url, cancellationToken);
+            response.EnsureSuccessStatusCode();
+            return (await response.Content.ReadFromJsonAsync<List<GroupParticipantV2>>(cancellationToken: cancellationToken))
+                   ?? new List<GroupParticipantV2>();
+        }
+
+        #endregion
+
+        #region [ ADDITIONAL PROFILE ]
+
+        public async Task<bool> DeleteProfilePictureAsync(string sessionName, CancellationToken cancellationToken)
+        {
+            var url = $"/api/{sessionName}/profile/picture";
+            var response = await _httpClient.DeleteAsync(url, cancellationToken);
+            response.EnsureSuccessStatusCode();
+            var result = await response.Content.ReadFromJsonAsync<SuccessResponse>(cancellationToken: cancellationToken);
+            return result?.Success ?? true;
+        }
+
+        public async Task<bool> SetProfileStatusAsync(string sessionName, string status, CancellationToken cancellationToken)
+        {
+            var url = $"/api/{sessionName}/profile/status";
+            var requestBody = new { status };
+            var response = await _httpClient.PutAsJsonAsync(url, requestBody, cancellationToken);
+            response.EnsureSuccessStatusCode();
+            var result = await response.Content.ReadFromJsonAsync<SuccessResponse>(cancellationToken: cancellationToken);
+            return result?.Success ?? true;
+        }
+
+        #endregion
+
+        #region [ ADDITIONAL STATUS ]
+
+        public async Task<NewMessageIdResponse> GetNewStatusMessageIdAsync(string session, CancellationToken cancellationToken)
+        {
+            var url = $"/api/{session}/status/new-message-id";
+            var response = await _httpClient.GetAsync(url, cancellationToken);
+            response.EnsureSuccessStatusCode();
+            return (await response.Content.ReadFromJsonAsync<NewMessageIdResponse>(cancellationToken: cancellationToken))
+                   ?? throw new InvalidOperationException("GetNewStatusMessageId returned null");
+        }
+
+        #endregion
     }
 }
