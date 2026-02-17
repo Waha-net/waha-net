@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net9.0</TargetFramework>
+		<TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<AssemblyName>Waha</AssemblyName>
@@ -21,17 +21,9 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <None Include="..\..\README.md">
-	    <Pack>True</Pack>
-	    <PackagePath>\</PackagePath>
-	  </None>
-	</ItemGroup>
-
-	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="9.0.5" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.5" />
-		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.5" />
-		<PackageReference Include="Microsoft.Extensions.Http" Version="9.0.5" />
+		<PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0" />
 		<PackageReference Include="System.Net.Http" Version="4.3.4" />
 	</ItemGroup>
 
