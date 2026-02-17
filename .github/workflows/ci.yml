@@ -1,0 +1,81 @@
+name: CI - Build and Test
+
+on:
+  pull_request:
+    branches: ["**"]
+  push:
+    branches: ["**"]
+    tags-ignore: ["**"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Shallow clones should be disabled for better relevancy of SonarQube analysis
+        
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 9.0.x
+    
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+    
+    - name: Cache SonarQube packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.sonar/cache
+        key: ${{ runner.os }}-sonar
+        restore-keys: ${{ runner.os }}-sonar
+    
+    - name: Cache .NET packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+    
+    - name: Install SonarQube scanner
+      run: dotnet tool install --global dotnet-sonarscanner
+    
+    - name: Restore dependencies
+      run: dotnet restore src/Waha.sln
+      
+    - name: Begin SonarQube analysis
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
+      run: |
+        if [ -n "$SONAR_TOKEN" ] && [ -n "$SONAR_HOST_URL" ]; then
+          dotnet sonarscanner begin \
+            /k:"${{ vars.SONAR_PROJECT_KEY }}" \
+            /o:"${{ vars.SONAR_ORGANIZATION }}" \
+            /d:sonar.host.url="${SONAR_HOST_URL}" \
+            /d:sonar.login="${SONAR_TOKEN}"
+        else
+          echo "SonarQube analysis skipped - SONAR_TOKEN or SONAR_HOST_URL not configured"
+        fi
+      
+    - name: Build
+      run: dotnet build src/Waha.sln --configuration Release --no-restore
+    
+    - name: Test
+      run: dotnet test src/Waha.sln --configuration Release --no-build --verbosity normal
+    
+    - name: End SonarQube analysis
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
+      run: |
+        if [ -n "$SONAR_TOKEN" ] && [ -n "$SONAR_HOST_URL" ]; then
+          dotnet sonarscanner end /d:sonar.login="${SONAR_TOKEN}"
+        else
+          echo "SonarQube analysis skipped - SONAR_TOKEN or SONAR_HOST_URL not configured"
+        fi
