@@ -99,6 +99,9 @@ namespace Waha
 
         [JsonPropertyName("webhooks")]
         public List<WebhookConfig>? Webhooks { get; set; }
+
+        [JsonPropertyName("ignore")]
+        public IgnoreConfig? Ignore { get; set; }
     }
 
     /// <summary>
@@ -159,6 +162,24 @@ namespace Waha
 
         [JsonPropertyName("customHeaders")]
         public List<CustomHeader>? CustomHeaders { get; set; }
+    }
+
+    /// <summary>
+    /// Configuration for chat ignore.
+    /// </summary>
+    public record IgnoreConfig
+    {
+        [JsonPropertyName("status")]
+        public bool Status { get; set; }
+
+        [JsonPropertyName("groups")]
+        public bool Groups { get; set; }
+
+        [JsonPropertyName("channels")]
+        public bool Channels { get; set; }
+
+        [JsonPropertyName("broadcast")]
+        public bool Broadcast { get; set; }
     }
 
     /// <summary>
