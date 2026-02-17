@@ -1,5 +1,8 @@
 name: CD - Release and Publish
 
+# CD only builds and packages the Client library (Waha NuGet package)
+# CI workflow validates the entire solution
+
 on:
   push:
     tags:
@@ -68,7 +71,9 @@ jobs:
       run: dotnet nuget push nugetPackage/*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source "github" --skip-duplicate
     
     - name: Push package to nuget.org
-      if: ${{ secrets.NUGET_API_KEY != '' }}
+      env:
+        NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+      if: env.NUGET_API_KEY != ''
       run: dotnet nuget push nugetPackage/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
     
     - name: Create GitHub Release
