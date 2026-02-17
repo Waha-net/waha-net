@@ -1,5 +1,8 @@
 name: CI - Build and Test
 
+# CI validates the entire solution including all projects
+# CD workflow only packages the Client library for distribution
+
 on:
   pull_request:
     branches: ["**"]
