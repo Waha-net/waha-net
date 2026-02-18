@@ -15,6 +15,6 @@
         /// <summary>
         /// Gets or sets the endpoint URI for the Waha API.
         /// </summary>
-        public Uri Endpoint { get; set; }
+        public Uri Endpoint { get; set; } = new Uri(DEFAULT_WAHA_ENDPOINT);
     }
 }
