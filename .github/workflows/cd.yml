@@ -24,7 +24,7 @@ jobs:
 
       - name: Verify tag is on main
         run: |
-          git fetch origin main --depth=1
+          git fetch origin main --depth=0
           if ! git merge-base --is-ancestor ${{ github.sha }} origin/main; then
             echo "❌ Tag '${{ github.ref_name }}' is not on main. Aborting release."
             exit 1
