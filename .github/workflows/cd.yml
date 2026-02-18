@@ -84,6 +84,10 @@ jobs:
     permissions:
       contents: write   # Required for creating GitHub Releases
       packages: write   # Required for publishing to GitHub Packages
+    env:
+      # secrets context is unavailable in step-level if: conditions.
+      # Mapping to an env var allows safe conditional checking in steps.
+      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
 
     steps:
       - name: Download NuGet package artifact
@@ -116,10 +120,9 @@ jobs:
             --skip-duplicate
 
       - name: Push to NuGet.org
-        # Only runs if NUGET_API_KEY secret is configured
-        if: secrets.NUGET_API_KEY != ''
-        env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        # Only runs if NUGET_API_KEY secret is configured.
+        # env.NUGET_API_KEY is used because secrets context is unavailable in if: conditions.
+        if: env.NUGET_API_KEY != ''
         run: |
           dotnet nuget push nugetPackage/*.nupkg \
             --api-key ${{ env.NUGET_API_KEY }} \
