@@ -102,20 +102,24 @@ jobs:
           dotnet-version: 9.0.x
 
       - name: Add GitHub Packages source
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         # --store-password-in-clear-text is required by the dotnet CLI for token-based
         # auth with GitHub Packages. The token is still transmitted over HTTPS only.
         run: |
           dotnet nuget add source \
             --username ${{ github.repository_owner }} \
-            --password ${{ secrets.GITHUB_TOKEN }} \
+            --password ${GITHUB_TOKEN} \
             --store-password-in-clear-text \
             --name github \
             "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
 
       - name: Push to GitHub Packages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           dotnet nuget push nugetPackage/*.nupkg \
-            --api-key ${{ secrets.GITHUB_TOKEN }} \
+            --api-key ${GITHUB_TOKEN} \
             --source "github" \
             --skip-duplicate
 
