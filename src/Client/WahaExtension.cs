@@ -57,6 +57,8 @@ namespace Microsoft.Extensions.Hosting
 
             configureSettings?.Invoke(settings);
 
+            builder.Services.AddHttpClient();
+
             if (!string.IsNullOrWhiteSpace(serviceKey))
             {
                 builder.Services.AddKeyedSingleton(serviceKey, (sp, _) => ConfigureWahaClient(sp));
