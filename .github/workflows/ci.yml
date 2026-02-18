@@ -82,10 +82,11 @@ jobs:
     name: SonarQube Analysis
     runs-on: ubuntu-latest
     needs: build-and-test
-    # Skip entirely if secrets/vars are not configured
-    if: >
-      vars.SONAR_HOST_URL != '' &&
-      secrets.SONAR_TOKEN != ''
+    # Skip entirely if SonarQube is not configured.
+    # Note: secrets context is not available in job-level if conditions —
+    # SONAR_HOST_URL is used as the single gate since both vars are always
+    # configured together. A missing token will produce a clear auth error.
+    if: vars.SONAR_HOST_URL != ''
     permissions:
       contents: read
     steps:
