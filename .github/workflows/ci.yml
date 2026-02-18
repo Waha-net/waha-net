@@ -1,10 +1,13 @@
 name: CI - Build and Test
 
-# Only trigger on PRs targeting the dev branch
+# Triggers on PRs targeting dev (feature branches) or main (dev → main promotion).
+# Restore + Build & Test run on all PRs.
+# SonarCloud only runs on the dev → main PR.
 on:
   pull_request:
     branches:
-      - dev
+      - dev   # Any branch → dev (feature PRs)
+      - main  # dev → main (promotion PR)
 
 concurrency:
   group: ci-${{ github.event.pull_request.number }}
@@ -22,7 +25,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup .NET (latest for restore)
+      - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 9.0.x
@@ -76,17 +79,18 @@ jobs:
       - name: Test
         run: dotnet test src/Waha.sln --configuration Release --no-build --verbosity normal
 
-  # ── Job 3: SonarQube Analysis ─────────────────────────────────────────────
-  # Runs after all matrix builds pass. Uses .NET 9 + JDK 17 for the scanner.
+  # ── Job 3: SonarCloud Analysis ────────────────────────────────────────────
+  # Only runs on the dev → main PR and when SonarCloud vars are configured.
+  # github.head_ref = source branch (dev)
+  # github.base_ref = target branch (main)
   sonarqube:
-    name: SonarQube Analysis
+    name: SonarCloud Analysis
     runs-on: ubuntu-latest
     needs: build-and-test
-    # Skip entirely if SonarQube is not configured.
-    # Note: secrets context is not available in job-level if conditions —
-    # SONAR_HOST_URL is used as the single gate since both vars are always
-    # configured together. A missing token will produce a clear auth error.
-    if: vars.SONAR_HOST_URL != ''
+    if: >
+      vars.SONAR_HOST_URL != '' &&
+      github.head_ref == 'dev' &&
+      github.base_ref == 'main'
     permissions:
       contents: read
     steps:
@@ -105,7 +109,7 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Cache SonarQube packages
+      - name: Cache SonarCloud packages
         uses: actions/cache@v4
         with:
           path: ~/.sonar/cache
@@ -120,13 +124,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuget-
 
-      - name: Install SonarQube scanner
+      - name: Install SonarCloud scanner
         run: dotnet tool install --global dotnet-sonarscanner
 
       - name: Restore dependencies
         run: dotnet restore src/Waha.sln
 
-      - name: Begin SonarQube analysis
+      - name: Begin SonarCloud analysis
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
@@ -140,7 +144,7 @@ jobs:
       - name: Build for analysis
         run: dotnet build src/Waha.sln --configuration Release --no-restore
 
-      - name: End SonarQube analysis
+      - name: End SonarCloud analysis
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: dotnet sonarscanner end /d:sonar.token="${SONAR_TOKEN}"
