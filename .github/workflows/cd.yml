@@ -1,91 +1,137 @@
 name: CD - Release and Publish
 
-# CD only builds and packages the Client library (Waha NuGet package)
-# CI workflow validates the entire solution
-
+# Triggers only on semver tags (e.g. v1.2.3 or v1.2.3-beta.1)
 on:
   push:
     tags:
-      - 'v*'  # Trigger on version tags (e.g., v1.0.0, v1.2.3)
+      - 'v[0-9]+.[0-9]+.[0-9]+*'
 
 jobs:
+  # ── Job 1: Build & Pack ───────────────────────────────────────────────────
   build:
+    name: Build & Pack
     runs-on: ubuntu-latest
     permissions:
-      contents: read  # Required for checkout
+      contents: read
     outputs:
       version: ${{ steps.get_version.outputs.version }}
-    
+
     steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-    
-    - name: Get version from tag
-      id: get_version
-      run: |
-        # Remove 'v' prefix from tag to get version number
-        VERSION=${GITHUB_REF#refs/tags/v}
-        echo "version=$VERSION" >> $GITHUB_OUTPUT
-        echo "Version: $VERSION"
-    
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 9.0.x
+      - uses: actions/checkout@v4
+        with:
+          # Full history needed so GitHub can generate meaningful release notes
+          fetch-depth: 0
 
-    - name: Restore dependencies
-      run: dotnet restore src/Client/Client.csproj
-      
-    - name: Build
-      run: dotnet build src/Client/Client.csproj --configuration Release --no-restore
- 
-    - name: Pack NuGet package with version from tag
-      run: dotnet pack src/Client/Client.csproj -p:PackageVersion='${{ steps.get_version.outputs.version }}' -p:Version='${{ steps.get_version.outputs.version }}' -c Release -o ./nupkg
+      - name: Verify tag is on main
+        run: |
+          git fetch origin main --depth=1
+          if ! git merge-base --is-ancestor ${{ github.sha }} origin/main; then
+            echo "❌ Tag '${{ github.ref_name }}' is not on main. Aborting release."
+            exit 1
+          fi
 
-    - name: Upload NuGet package to GitHub
-      uses: actions/upload-artifact@v4
-      with:
-        name: nugetPackage
-        path: ./nupkg/*.nupkg
+      - name: Get version from tag
+        id: get_version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION"
 
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore dependencies
+        run: dotnet restore src/Client/Client.csproj
+
+      - name: Build
+        run: dotnet build src/Client/Client.csproj --configuration Release --no-restore
+
+      - name: Pack NuGet package
+        # --no-build avoids a redundant second compile after the explicit build above.
+        # Version is injected from the git tag — no version is stored in the .csproj.
+        run: |
+          dotnet pack src/Client/Client.csproj \
+            --configuration Release \
+            --no-build \
+            -p:PackageVersion=${{ steps.get_version.outputs.version }} \
+            -p:Version=${{ steps.get_version.outputs.version }} \
+            -p:AssemblyVersion=${{ steps.get_version.outputs.version }}.0 \
+            -p:FileVersion=${{ steps.get_version.outputs.version }}.0 \
+            --output ./nupkg
+
+      - name: Upload NuGet package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nugetPackage
+          path: ./nupkg/*.nupkg
+          retention-days: 7
+
+  # ── Job 2: Release & Publish ──────────────────────────────────────────────
   release:
+    name: Release & Publish
     runs-on: ubuntu-latest
     needs: build
-    if: github.ref_type == 'tag'  # Only run on tag pushes
     permissions:
-      contents: write  # Required for creating releases
-      packages: write  # Required for publishing to GitHub Packages
-    
+      contents: write   # Required for creating GitHub Releases
+      packages: write   # Required for publishing to GitHub Packages
+
     steps:
-    - name: Download nuget package artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: nugetPackage
-        path: nugetPackage
-        
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 9.0.x
-        
-    - name: Configure GitHub Packages source
-      run: dotnet nuget add source --username ${{ github.repository_owner }} --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
-    
-    - name: Push package to GitHub packages
-      run: dotnet nuget push nugetPackage/*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source "github" --skip-duplicate
-    
-    - name: Push package to nuget.org
-      env:
-        NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-      if: env.NUGET_API_KEY != ''
-      run: dotnet nuget push nugetPackage/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
-    
-    - name: Create GitHub Release
-      uses: ncipollo/release-action@v1
-      with:
-        tag: ${{ github.ref_name }}
-        name: Release ${{ needs.build.outputs.version }}
-        artifacts: "nugetPackage/*"
-        token: ${{ secrets.GITHUB_TOKEN }}
-        generateReleaseNotes: true
+      - name: Download NuGet package artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: nugetPackage
+          path: nugetPackage
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Add GitHub Packages source
+        # --store-password-in-clear-text is required by the dotnet CLI for token-based
+        # auth with GitHub Packages. The token is still transmitted over HTTPS only.
+        run: |
+          dotnet nuget add source \
+            --username ${{ github.repository_owner }} \
+            --password ${{ secrets.GITHUB_TOKEN }} \
+            --store-password-in-clear-text \
+            --name github \
+            "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
+
+      - name: Push to GitHub Packages
+        run: |
+          dotnet nuget push nugetPackage/*.nupkg \
+            --api-key ${{ secrets.GITHUB_TOKEN }} \
+            --source "github" \
+            --skip-duplicate
+
+      - name: Push to NuGet.org
+        # Only runs if NUGET_API_KEY secret is configured
+        if: secrets.NUGET_API_KEY != ''
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          dotnet nuget push nugetPackage/*.nupkg \
+            --api-key ${{ env.NUGET_API_KEY }} \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate
+
+      - name: Create GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ github.ref_name }}
+          name: Release ${{ needs.build.outputs.version }}
+          artifacts: "nugetPackage/*"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          generateReleaseNotes: true
+          makeLatest: true
