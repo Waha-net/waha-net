@@ -3,7 +3,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Waha;
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.Extensions.Hosting
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 {
     /// <summary>
     /// Provides extension methods for configuring and adding the Waha API client to the host application builder.
@@ -46,7 +48,11 @@ namespace Microsoft.Extensions.Hosting
 
             if (settings.Endpoint == default && builder.Configuration.GetConnectionString(connectionName) is string connectionString)
             {
-                settings.Endpoint = ParseEndpointFromConnectionString(connectionString);
+                var endpoint = ParseEndpointFromConnectionString(connectionString);
+                if (endpoint != null)
+                {
+                    settings.Endpoint = endpoint;
+                }
             }
 
             configureSettings?.Invoke(settings);

@@ -70,10 +70,13 @@ class Program
         Console.WriteLine("Select chat id");
         var chatId = Console.ReadLine();
 
-        var messages = await wahaApiClient.GetChatMessagesAsync(session.Name, chatId);
-        foreach (var message in messages)
+        if(!string.IsNullOrWhiteSpace(chatId))
         {
-            Console.WriteLine($"Message @ {message.Timestamp} from {message.From} to {message.To}: {message.Body}");
+            var messages = await wahaApiClient.GetChatMessagesAsync(session.Name, chatId);
+            foreach (var message in messages)
+            {
+                Console.WriteLine($"Message @ {message.Timestamp} from {message.From} to {message.To}: {message.Body}");
+            }
         }
 
         Console.ReadLine();
