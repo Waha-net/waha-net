@@ -152,7 +152,7 @@ namespace Waha
         public string Url { get; set; } = default!;
 
         [JsonPropertyName("events")]
-        public List<string> Events { get; set; } = new();
+        public List<string> Events { get; set; } = [];
 
         [JsonPropertyName("hmac")]
         public HmacConfiguration? Hmac { get; set; }
@@ -381,7 +381,7 @@ namespace Waha
         public string? FileName { get; set; }
 
         [JsonPropertyName("s3")]
-        public MediaS3Reference S3 { get; set; }
+        public MediaS3Reference? S3 { get; set; }
 
         [JsonPropertyName("error")]
         public string? Error { get; set; }
@@ -651,7 +651,7 @@ namespace Waha
         public string Question { get; set; } = default!;
 
         [JsonPropertyName("options")]
-        public List<string> Options { get; set; } = new();
+        public List<string> Options { get; set; } = [];
 
         [JsonPropertyName("multipleAnswers")]
         public bool IsMultipleAnswers { get; set; } = false;
@@ -660,11 +660,14 @@ namespace Waha
     public class SendPollResponsePoll
     {
         [JsonPropertyName("id")]
-        public string Id { get; set; }
+        public string? Id { get; set; }
+
         [JsonPropertyName("to")]
-        public string To { get; set; }
+        public string? To { get; set; }
+
         [JsonPropertyName("from")]
-        public string From { get; set; }
+        public string? From { get; set; }
+
         [JsonPropertyName("fromMe")]
         public bool FromMe { get; set; }
     }
@@ -672,28 +675,28 @@ namespace Waha
     public class SendPollResponse
     {
         [JsonPropertyName("vote")]
-        public SendPollResponseVote Vote { get; set; }
+        public SendPollResponseVote? Vote { get; set; }
 
         [JsonPropertyName("poll")]
-        public SendPollResponsePoll Poll { get; set; }
+        public SendPollResponsePoll? Poll { get; set; }
     }
 
     public class SendPollResponseVote
     {
         [JsonPropertyName("id")]
-        public string Id { get; set; }
+        public string? Id { get; set; }
 
         [JsonPropertyName("to")]
-        public string To { get; set; }
+        public string? To { get; set; }
 
         [JsonPropertyName("from")]
-        public string From { get; set; }
+        public string? From { get; set; }
 
         [JsonPropertyName("fromMe")]
         public bool FromMe { get; set; }
 
         [JsonPropertyName("selectedOptions")]
-        public List<string> SelectedOptions { get; set; }
+        public List<string> SelectedOptions { get; set; } = [];
 
         [JsonPropertyName("timestamp")]
         public long Timestamp { get; set; }
@@ -895,7 +898,7 @@ namespace Waha
     public record ChannelListResult
     {
         [JsonPropertyName("channels")]
-        public List<Channel> Channels { get; set; } = new();
+        public List<Channel> Channels { get; set; } = [];
     }
 
     #endregion
@@ -959,7 +962,7 @@ namespace Waha
     public record DeleteStatusRequest
     {
         [JsonPropertyName("messageIds")]
-        public List<string> MessageIds { get; set; } = new();
+        public List<string> MessageIds { get; set; } = [];
     }
 
     #endregion
@@ -1153,7 +1156,7 @@ namespace Waha
         public string Subject { get; set; } = default!;
 
         [JsonPropertyName("participants")]
-        public List<string> Participants { get; set; } = new();
+        public List<string> Participants { get; set; } = [];
     }
 
     /// <summary>
@@ -1192,7 +1195,7 @@ namespace Waha
     public record ParticipantsRequest
     {
         [JsonPropertyName("participants")]
-        public List<string> Participants { get; set; } = new();
+        public List<string> Participants { get; set; } = [];
     }
 
     /// <summary>
@@ -1269,7 +1272,7 @@ namespace Waha
     public record SetLabelsRequest
     {
         [JsonPropertyName("labelIds")]
-        public List<string> LabelIds { get; set; } = new();
+        public List<string> LabelIds { get; set; } = [];
     }
 
     #endregion
@@ -1352,28 +1355,28 @@ namespace Waha
     public class WebhookEvent
     {
         [JsonPropertyName("id")]
-        public string Id { get; set; }
+        public string? Id { get; set; }
 
         [JsonPropertyName("session")]
-        public string Session { get; set; }
+        public string? Session { get; set; }
 
         [JsonPropertyName("metadata")]
-        public Dictionary<string, string> Metadata { get; set; }
+        public Dictionary<string, string> Metadata { get; set; } = [];
 
         [JsonPropertyName("engine")]
-        public string Engine { get; set; }
+        public string? Engine { get; set; }
 
         [JsonPropertyName("event")]
-        public string Event { get; set; }
+        public string? Event { get; set; }
 
         [JsonPropertyName("payload")]
-        public object Payload { get; set; }
+        public object? Payload { get; set; }
 
         [JsonPropertyName("me")]
-        public SessionUser Me { get; set; }
+        public SessionUser? Me { get; set; }
 
         [JsonPropertyName("environment")]
-        public Environment Environment { get; set; }
+        public Environment? Environment { get; set; }
     }
 
     #endregion
@@ -1467,7 +1470,7 @@ namespace Waha
         public string ButtonText { get; set; } = default!;
 
         [JsonPropertyName("sections")]
-        public List<ListSection> Sections { get; set; } = new();
+        public List<ListSection> Sections { get; set; } = [];
     }
 
     /// <summary>
@@ -1479,7 +1482,7 @@ namespace Waha
         public string Title { get; set; } = default!;
 
         [JsonPropertyName("rows")]
-        public List<ListRow> Rows { get; set; } = new();
+        public List<ListRow> Rows { get; set; } = [];
     }
 
     /// <summary>
@@ -1563,7 +1566,7 @@ namespace Waha
         public string PollMessageId { get; set; } = default!;
 
         [JsonPropertyName("options")]
-        public List<string> Options { get; set; } = new();
+        public List<string> Options { get; set; } = [];
     }
 
     /// <summary>

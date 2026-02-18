@@ -40,7 +40,7 @@ namespace Waha
         public async Task<IReadOnlyList<SessionShort>> GetSessionsAsync(bool all, CancellationToken cancellationToken = default)
         {
             string url = $"/api/sessions";
-            url = QueryHelpers.AddQueryString(url, new Dictionary<string, string>
+            url = QueryHelpers.AddQueryString(url, new Dictionary<string, string?>
             {
                 ["all"] = all.ToString()
             });
@@ -149,7 +149,7 @@ namespace Waha
             try
             {
                 var url = $"/api/{sessionName}/auth/qr";
-                url = QueryHelpers.AddQueryString(url, new Dictionary<string, string>
+                url = QueryHelpers.AddQueryString(url, new Dictionary<string, string?>
                 {
                     ["format"] = format
                 });
@@ -596,7 +596,7 @@ namespace Waha
 
         public async Task<IReadOnlyList<Chat>> GetChatsAsync(string session, int limit, int offset, string sortBy, string sortOrder, CancellationToken cancellationToken = default)
         {
-            var queryStringParameters = new Dictionary<string, string>
+            var queryStringParameters = new Dictionary<string, string?>
             {
                 ["limit"] = limit.ToString(),
                 ["offset"] = offset.ToString()
@@ -618,7 +618,7 @@ namespace Waha
         public async Task<IReadOnlyList<ChatOverview>> GetChatsOverviewAsync(string session, int limit, int offset, CancellationToken cancellationToken = default)
         {
             var url = $"/api/{session}/chats/overview";
-            url = QueryHelpers.AddQueryString(url, new Dictionary<string, string>
+            url = QueryHelpers.AddQueryString(url, new Dictionary<string, string?>
             {
                 ["limit"] = limit.ToString(),
                 ["offset"] = offset.ToString()
@@ -639,7 +639,7 @@ namespace Waha
         public async Task<ChatPicture> GetChatPictureAsync(string session, string chatId, bool refresh, CancellationToken cancellationToken = default)
         {
             var url = $"/api/{session}/chats/{chatId}/picture";
-            url = QueryHelpers.AddQueryString(url, new Dictionary<string, string>
+            url = QueryHelpers.AddQueryString(url, new Dictionary<string, string?>
             {
                 ["refresh"] = refresh.ToString()
             });
@@ -653,7 +653,7 @@ namespace Waha
         public async Task<IReadOnlyList<ChatMessage>> GetChatMessagesAsync(string session, string chatId, int limit, int offset, string filterTimestampLte, string filterTimestampGte, bool? filterOnlyMyMessages, bool downloadMedia, CancellationToken cancellationToken = default)
         {
             var url = $"/api/{session}/chats/{chatId}/messages";
-            url = QueryHelpers.AddQueryString(url, new Dictionary<string, string>
+            url = QueryHelpers.AddQueryString(url, new Dictionary<string, string?>
             {
                 ["limit"] = limit.ToString(),
                 ["offset"] = offset.ToString(),
@@ -749,7 +749,7 @@ namespace Waha
         public async Task<IReadOnlyList<Contact>> GetAllContactsAsync(string session, int limit, int offset, string sortAsc, string sortOrder, CancellationToken cancellationToken = default)
         {
             var url = $"/api/contacts/all";
-            url = QueryHelpers.AddQueryString(url, new Dictionary<string, string>
+            url = QueryHelpers.AddQueryString(url, new Dictionary<string, string?>
             {
                 ["session"] = session,
                 ["limit"] = limit.ToString(),
