@@ -3,20 +3,28 @@ using System.Text.Json.Serialization;
 
 namespace Waha
 {
-    public class UnixTimestampConverter : JsonConverter<DateTime>
+    public class UnixTimestampConverter : JsonConverter<long>
     {
-        public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override long Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            if (reader.TokenType == JsonTokenType.Number && reader.TryGetInt64(out long timestamp))
+            if (reader.TokenType == JsonTokenType.Number)
             {
-                return DateTimeOffset.FromUnixTimeSeconds(timestamp).DateTime;
+                if (reader.TryGetInt64(out long value))
+                    return value;
             }
-            throw new JsonException("Invalid timestamp format");
+
+            if (reader.TokenType == JsonTokenType.String)
+            {
+                if (long.TryParse(reader.GetString(), out long parsed))
+                    return parsed;
+            }
+
+            throw new JsonException("Invalid timestamp format.");
         }
 
-        public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, long value, JsonSerializerOptions options)
         {
-            writer.WriteNumberValue(new DateTimeOffset(value).ToUnixTimeSeconds());
+            writer.WriteNumberValue(value);
         }
     }
 
@@ -31,22 +39,26 @@ namespace Waha
         public string Name { get; set; } = default!;
 
         [JsonPropertyName("me")]
-        public SessionUser Me { get; set; } = default!;
+        public SessionUser? User { get; set; } = default!;
 
         [JsonPropertyName("assignedWorker")]
-        public string AssignedWorker { get; set; } = default!;
+        public string? AssignedWorker { get; set; } = default!;
 
+        /// <summary>
+        /// Valid values are: "STOPPED" or "STARTING" or "SCAN_QR_CODE" or "WORKING" or"FAILED"
+        /// </summary>
         [JsonPropertyName("status")]
         public string Status { get; set; } = default!;
 
         [JsonPropertyName("config")]
-        public SessionConfig Config { get; set; } = default!;
+        public SessionConfig? Config { get; set; } = default!;
     }
 
     /// <summary>
     /// A minimal version of session data.
     /// Used by endpoints that return a lighter session structure.
     /// </summary>
+    [Obsolete("Replace this by Session")]
     public record SessionShort
     {
         [JsonPropertyName("name")]
@@ -271,11 +283,8 @@ namespace Waha
     /// </summary>
     public record AuthRequestCodeResponse
     {
-        [JsonPropertyName("success")]
-        public bool Success { get; set; }
-
-        [JsonPropertyName("message")]
-        public string? Message { get; set; }
+        [JsonPropertyName("code")]
+        public string? Code { get; set; }
     }
 
     #endregion
@@ -308,7 +317,7 @@ namespace Waha
     public record Message
     {
         [JsonPropertyName("id")]
-        public string Id { get; set; } = default!;
+        public MessageId Id { get; set; } = default!;
 
         [JsonPropertyName("timestamp")]
         [JsonConverter(typeof(UnixTimestampConverter))]
@@ -352,6 +361,44 @@ namespace Waha
 
         [JsonPropertyName("replyTo")]
         public ReplyToMessage? ReplyTo { get; set; }
+
+        [JsonPropertyName("type")]
+        public string? Type { get; set; }
+
+        [JsonPropertyName("deviceType")]
+        public string? DeviceType { get; set; }
+
+        [JsonPropertyName("isForwarded")]
+        public bool IsForwarded { get; set; }
+
+        [JsonPropertyName("isStatus")]
+        public bool IsStatus { get; set; }
+
+        [JsonPropertyName("isStarred")]
+        public bool IsStarred { get; set; }
+
+        [JsonPropertyName("hasQuotedMsg")]
+        public bool HasQuotedMsg { get; set; }
+
+        [JsonPropertyName("mentionedIds")]
+        public List<string>? MentionedIds { get; set; }
+
+        [JsonPropertyName("links")]
+        public List<object>? Links { get; set; }
+    }
+
+    public record MessageId
+    {
+        [JsonPropertyName("fromMe")]
+        public bool FromMe { get; set; }
+        [JsonPropertyName("remote")]
+        public string Remote { get; set; } = default!;
+        [JsonPropertyName("id")]
+        public string Id { get; set; } = default!;
+        [JsonPropertyName("self")]
+        public string Self { get; set; } = default!;
+        [JsonPropertyName("_serialized")]
+        public string Serialized { get; set; } = default!;
     }
 
     /// <summary>
