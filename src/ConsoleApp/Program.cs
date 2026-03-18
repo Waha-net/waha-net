@@ -32,31 +32,30 @@ class Program
                     break;
                 case "SMS":
                     var authSmsRequestCodeResponse = await wahaApiClient.RequestAuthCodeAsync(activeSession.Name, new AuthCodeRequest() { PhoneNumber = "17824095342", Method = "SMS" });
-                    if (!authSmsRequestCodeResponse.Success)
+                    if (!string.IsNullOrWhiteSpace(authSmsRequestCodeResponse.Code))
                     {
-                        Console.WriteLine("Auth Code Error: " + authSmsRequestCodeResponse.Message);
+                        Console.WriteLine("Auth Code Error: " + authSmsRequestCodeResponse.Code);
                     }
                     break;
                 case "VOICE":
                     var authVoiceRequestCodeResponse = await wahaApiClient.RequestAuthCodeAsync(activeSession.Name, new AuthCodeRequest() { PhoneNumber = "17824095342", Method = "VOICE" });
-                    if (!authVoiceRequestCodeResponse.Success)
+                    if (!string.IsNullOrWhiteSpace(authVoiceRequestCodeResponse.Code))
                     {
-                        Console.WriteLine("Auth Code Error: " + authVoiceRequestCodeResponse.Message);
+                        Console.WriteLine("Auth Code Error: " + authVoiceRequestCodeResponse.Code);
                     }
                     break;
                 case "":
                     var authRequestCodeResponse = await wahaApiClient.RequestAuthCodeAsync(activeSession.Name, new AuthCodeRequest() { PhoneNumber = "17824095342", Method = "" });
-                    if (!authRequestCodeResponse.Success)
+                    if (!string.IsNullOrWhiteSpace(authRequestCodeResponse.Code))
                     {
-                        Console.WriteLine("Auth Code Error: " + authRequestCodeResponse.Message);
+                        Console.WriteLine("Auth Code Error: " + authRequestCodeResponse.Code);
                     }
                     break;
             }
         }
 
         var session = await wahaApiClient.GetSessionAsync(activeSession.Name);
-        var me = session.Me;
-        Console.WriteLine($"Logged in as {me.PushName} ({me.Id})");
+        Console.WriteLine($"Logged in as {session.User.PushName} ({session.User.Id})");
 
         var profile = await wahaApiClient.GetProfileAsync(session.Name);
         Console.WriteLine($"Profile: {profile.Name} ({profile.Id})");
