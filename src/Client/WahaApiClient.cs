@@ -27,12 +27,24 @@ namespace Waha
         private readonly HttpClient _httpClient;
         private readonly ILogger<WahaApiClient> _logger;
 
+        public WahaApiClient(string wahaHostUrl, string apiKey, ILogger<WahaApiClient>? logger = null)
+            : this(GetWahaHttpClient(wahaHostUrl, apiKey), logger)
+        { 
+        }
+
         public WahaApiClient(HttpClient httpClient, ILogger<WahaApiClient>? logger = null)
         {
             _httpClient = httpClient;
             _logger = logger ?? Microsoft.Extensions.Logging.Abstractions.NullLogger<WahaApiClient>.Instance;
 
             _logger.LogDebug("WahaApiClient initialized with base address: {BaseAddress}", httpClient.BaseAddress);
+        }
+
+        private static HttpClient GetWahaHttpClient(string wahaHostUrl, string apiKey) 
+        {
+            HttpClient client = new HttpClient() { BaseAddress = new Uri(wahaHostUrl) };
+            client.DefaultRequestHeaders.Add("X-Api-Key", apiKey);
+            return client;
         }
 
         #region [ SESSIONS ]
